@@ -18,10 +18,10 @@ import PIL.Image
 import urllib
 from bs4 import BeautifulSoup
 
-num_categories = 5
-num_images = 3
-#TODO insert correct path for /data
-category_path = f'/home/clionaodoherty/Desktop/imagenet_categories'
+num_categories = 500
+num_images = 150
+
+category_path = f'/data/imagenet_cmc'
 list_path = f'{category_path}/imagenet_categs_{num_categories}.json'
 test_categs = []
 
@@ -42,13 +42,11 @@ else:
         json.dump(test_categs,f)
 
 def url_to_image(url):
-    # download the image, convert it to a NumPy array, and then read
-    # it into OpenCV format
+    # download the image, convert it to a NumPy array, and then read it into OpenCV format
     resp = urllib.request.urlopen(url)
     image = np.asarray(bytearray(resp.read()), dtype="uint8")
     image = cv2.imdecode(image, cv2.IMREAD_COLOR)
     
-    # return the image
     return image
 
 for synset in test_categs:
