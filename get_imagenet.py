@@ -58,10 +58,6 @@ for synset in test_categs:
     soup = BeautifulSoup(urls.content, 'html.parser')
     soup = str(soup)
     url_list = soup.split('\r\n')
-
-    if len(url_list) == 0:
-        print('ran out of urls to sample from')
-        continue
     
     img_rows, img_cols = 32, 32
     input_shape = (img_rows, img_cols, 3)
@@ -73,9 +69,10 @@ for synset in test_categs:
         _url = random.choice(url_list)
         if not _url in _tested:
             save_path = f'{img_path}/img_{_url}.jpg'
+            _tested.append(_url)
             if os.path.exists(save_path):
-                continue
-            if not _url == None:
+                print('image already saved')
+            else:
                 try:
                     I = url_to_image(_url)
                     if (len(I.shape))==3: 
@@ -83,4 +80,3 @@ for synset in test_categs:
                         print(f'{synset} image saved successfully')
                 except:
                     print('image not found from synset url')
-                    continue
