@@ -64,6 +64,7 @@ for synset in test_categs:
     
     #TODO: use a generator to do next for saving the images
     while len(os.listdir(img_path)) < num_images:
+        #TODO: check if the image has already been chosen
         _url = random.choice(url_list)
         if not _url == None:
             try:
