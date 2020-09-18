@@ -5,8 +5,8 @@ from nltk.corpus import wordnet as wn
 import pandas as pd
 
 num_categories = 500
-category_path = f'/data/imagenet_cmc'
-#category_path = f'/home/clionaodoherty/Desktop/imagenet_categories'
+#category_path = f'/data/imagenet_cmc'
+category_path = f'/home/clionaodoherty/Desktop/imagenet_categories'
 list_path = f'{category_path}/imagenet_categs_{num_categories}.json'
 test_wnids = []
 

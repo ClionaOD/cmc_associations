@@ -59,15 +59,20 @@ for synset in test_categs:
     soup = BeautifulSoup(urls.content, 'html.parser')
     soup = str(soup)
     url_list = soup.split('\r\n')
+    _url_done = []
     
     img_rows, img_cols = 32, 32
     input_shape = (img_rows, img_cols, 3)
     
     #TODO: use a generator to do next for saving the images
-    while len(os.listdir(img_path)) < num_images:
+    while len(os.listdir(img_path)) < num_images and not len(url_list) == 0:
         #TODO: check if the image has already been chosen
         _url = random.choice(url_list)
+        url_list.remove(_url)
+        _url_done.append(_url)
+
         save_path = f'{img_path}/img_{_url}.jpg'
+
         if not os.path.exists(save_path) and not _url == None:
             try:
                 I = url_to_image(_url)
@@ -75,11 +80,5 @@ for synset in test_categs:
                     cv2.imwrite(save_path,I)
                     print(f'{synset} image saved successfully')
             except:
-                print('404 image not found from synset url')
+                print('image not found from synset url')
                 continue
-
-    
-
-
-
-
