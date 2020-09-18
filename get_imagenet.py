@@ -67,18 +67,20 @@ for synset in test_categs:
     input_shape = (img_rows, img_cols, 3)
     
     #TODO: use a generator to do next for saving the images
+    _tested = []
     while len(os.listdir(img_path)) < num_images:
         #TODO: check if the image has already been chosen
         _url = random.choice(url_list)
-        save_path = f'{img_path}/img_{_url}.jpg'
-        if os.path.exists(save_path):
-            continue
-        if not _url == None:
-            try:
-                I = url_to_image(_url)
-                if (len(I.shape))==3: 
-                    cv2.imwrite(save_path,I)
-                    print(f'{synset} image saved successfully')
-            except:
-                print('image not found from synset url')
+        if not _url in _tested:
+            save_path = f'{img_path}/img_{_url}.jpg'
+            if os.path.exists(save_path):
                 continue
+            if not _url == None:
+                try:
+                    I = url_to_image(_url)
+                    if (len(I.shape))==3: 
+                        cv2.imwrite(save_path,I)
+                        print(f'{synset} image saved successfully')
+                except:
+                    print('image not found from synset url')
+                    continue
