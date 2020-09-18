@@ -47,7 +47,6 @@ def url_to_image(url):
     resp = urllib.request.urlopen(url)
     image = np.asarray(bytearray(resp.read()), dtype="uint8")
     image = cv2.imdecode(image, cv2.IMREAD_COLOR)
-    
     return image
 
 for synset in test_categs:
@@ -59,7 +58,6 @@ for synset in test_categs:
     soup = BeautifulSoup(urls.content, 'html.parser')
     soup = str(soup)
     url_list = soup.split('\r\n')
-    _url_done = []
 
     if len(url_list) == 0:
         print('ran out of urls to sample from')
@@ -72,12 +70,10 @@ for synset in test_categs:
     while len(os.listdir(img_path)) < num_images:
         #TODO: check if the image has already been chosen
         _url = random.choice(url_list)
-        url_list.remove(_url)
-        _url_done.append(_url)
-
         save_path = f'{img_path}/img_{_url}.jpg'
-
-        if not os.path.exists(save_path) and not _url == None:
+        if os.path.exists(save_path):
+            continue
+        if not _url == None:
             try:
                 I = url_to_image(_url)
                 if (len(I.shape))==3: 
