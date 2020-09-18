@@ -22,6 +22,7 @@ num_categories = 500
 num_images = 150
 
 category_path = f'/data/imagenet_cmc'
+#category_path = f'/home/clionaodoherty/Desktop/imagenet_categories'
 list_path = f'{category_path}/imagenet_categs_{num_categories}.json'
 test_categs = []
 
@@ -74,7 +75,7 @@ for synset in test_categs:
                     cv2.imwrite(save_path,I)
                     print(f'{synset} image saved successfully')
             except:
-                print('404 image not found from sysnet url')
+                print('404 image not found from synset url')
                 continue
 
     
