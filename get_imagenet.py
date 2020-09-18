@@ -60,12 +60,16 @@ for synset in test_categs:
     soup = str(soup)
     url_list = soup.split('\r\n')
     _url_done = []
+
+    if len(url_list) == 0:
+        print('ran out of urls to sample from')
+        continue
     
     img_rows, img_cols = 32, 32
     input_shape = (img_rows, img_cols, 3)
     
     #TODO: use a generator to do next for saving the images
-    while len(os.listdir(img_path)) < num_images and not len(url_list) == 0:
+    while len(os.listdir(img_path)) < num_images:
         #TODO: check if the image has already been chosen
         _url = random.choice(url_list)
         url_list.remove(_url)
