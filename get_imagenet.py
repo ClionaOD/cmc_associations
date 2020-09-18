@@ -66,11 +66,11 @@ for synset in test_categs:
     while len(os.listdir(img_path)) < num_images:
         #TODO: check if the image has already been chosen
         _url = random.choice(url_list)
-        if not _url == None:
+        save_path = f'{img_path}/img_{_url}.jpg'
+        if not os.path.exists(save_path) and not _url == None:
             try:
                 I = url_to_image(_url)
                 if (len(I.shape))==3: 
-                    save_path = f'{img_path}/img_{len(os.listdir(img_path))}.jpg'
                     cv2.imwrite(save_path,I)
                     print(f'{synset} image saved successfully')
             except:
