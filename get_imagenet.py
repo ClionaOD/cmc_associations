@@ -16,6 +16,7 @@ import numpy as np
 import cv2
 import PIL.Image
 import urllib
+import logging
 from bs4 import BeautifulSoup
 
 num_categories = 500
@@ -41,6 +42,8 @@ else:
 
     with open(f'{list_path}','w') as f:
         json.dump(test_categs,f)
+
+logging.basicConfig(filename='./imagenet_download.log',level=logging.DEBUG)
 
 def url_to_image(url):
     # download the image, convert it to a NumPy array, and then read it into OpenCV format
@@ -78,4 +81,6 @@ for synset in test_categs:
                         cv2.imwrite(save_path,I)
                         print(f'{synset} image saved successfully')
                 except:
-                    print('image not found from synset url')
+                    E = requests.get(_url)
+                    print(f'image not found from synset url   {E}')
+                    logging.debug(f'Synset ID: {synset}     HTTP Error: {E}')
