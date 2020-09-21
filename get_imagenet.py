@@ -19,11 +19,11 @@ import urllib
 import logging
 from bs4 import BeautifulSoup
 
-num_categories = 500
-num_images = 150
+num_categories = 5#00
+num_images = 15#0
 
-category_path = f'/data/imagenet_cmc'
-#category_path = f'/home/clionaodoherty/Desktop/imagenet_categories'
+#category_path = f'/data/imagenet_cmc'
+category_path = f'/home/clionaodoherty/Desktop/imagenet_categories'
 list_path = f'{category_path}/imagenet_categs_{num_categories}.json'
 test_categs = []
 
@@ -81,6 +81,9 @@ for synset in test_categs:
                         cv2.imwrite(save_path,I)
                         print(f'{synset} image saved successfully')
                 except:
-                    E = requests.get(_url)
-                    print(f'image not found from synset url   {E}')
-                    logging.debug(f'Synset ID: {synset}     HTTP Error: {E}')
+                    try:
+                        E = requests.get(_url)
+                        print(f'image not found from synset url   {E}')
+                        logging.debug(f'Synset ID: {synset}     HTTP Error: {E}')
+                    except:
+                        continue
