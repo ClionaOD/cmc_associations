@@ -15,6 +15,6 @@ while copyCount < 5:
             src = f'{og_path}/{cp_folder}/{f}'
             dst = f'{new_path}/{cp_folder}/{f}'
             if not os.path.exists(dst):
-                os.makedirs(f)
+                os.makedirs(f'{new_path}/{cp_folder}/')
             copyfile(src, dst)
         done.append(cp_folder)
