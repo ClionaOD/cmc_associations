@@ -14,7 +14,7 @@ while copyCount < 5:
             f = random.choice(os.listdir(f'{og_path}/{cp_folder}'))
             src = f'{og_path}/{cp_folder}/{f}'
             dst = f'{new_path}/{cp_folder}/{f}'
-            if not os.path.exists(dst):
+            if not os.path.exists(f'{new_path}/{cp_folder}/'):
                 os.makedirs(f'{new_path}/{cp_folder}/')
             copyfile(src, dst)
         done.append(cp_folder)
