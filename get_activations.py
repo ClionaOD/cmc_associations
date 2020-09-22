@@ -152,4 +152,5 @@ def main(args):
 
 if __name__ == '__main__':
     args = parse_option()
+    print('args parsed')
     main(args)
