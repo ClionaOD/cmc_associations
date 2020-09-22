@@ -1,0 +1,136 @@
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.image-net.org:80
+DEBUG:urllib3.connectionpool:http://www.image-net.org:80 "GET /api/text/imagenet.synset.geturls?wnid=n07889990 HTTP/1.1" 200 None
+DEBUG:chardet.charsetprober:utf-8  confidence = 0.99
+DEBUG:chardet.charsetprober:SHIFT_JIS Japanese confidence = 0.01
+DEBUG:chardet.charsetprober:EUC-JP Japanese confidence = 0.01
+DEBUG:chardet.charsetprober:GB2312 Chinese confidence = 0.01
+DEBUG:chardet.charsetprober:EUC-KR Korean confidence = 0.01
+DEBUG:chardet.charsetprober:CP949 Korean confidence = 0.01
+DEBUG:chardet.charsetprober:Big5 Chinese confidence = 0.01
+DEBUG:chardet.charsetprober:EUC-TW Taiwan confidence = 0.01
+DEBUG:chardet.charsetprober:windows-1251 Russian confidence = 0.01
+DEBUG:chardet.charsetprober:KOI8-R Russian confidence = 0.01
+DEBUG:chardet.charsetprober:ISO-8859-5 Russian confidence = 0.0
+DEBUG:chardet.charsetprober:MacCyrillic Russian confidence = 0.0
+DEBUG:chardet.charsetprober:IBM866 Russian confidence = 0.10139079576969437
+DEBUG:chardet.charsetprober:IBM855 Russian confidence = 0.051715132899772275
+DEBUG:chardet.charsetprober:ISO-8859-7 Greek confidence = 0.0
+DEBUG:chardet.charsetprober:windows-1253 Greek confidence = 0.0
+DEBUG:chardet.charsetprober:ISO-8859-5 Bulgairan confidence = 0.0
+DEBUG:chardet.charsetprober:windows-1251 Bulgarian confidence = 0.0
+DEBUG:chardet.charsetprober:TIS-620 Thai confidence = 0.08722938473603963
+DEBUG:chardet.charsetprober:ISO-8859-9 Turkish confidence = 0.4631572551450959
+DEBUG:chardet.charsetprober:windows-1255 Hebrew confidence = 0.0
+DEBUG:chardet.charsetprober:windows-1255 Hebrew confidence = 0.0
+DEBUG:chardet.charsetprober:windows-1255 Hebrew confidence = 0.0
+DEBUG:chardet.charsetprober:utf-8  confidence = 0.99
+DEBUG:chardet.charsetprober:SHIFT_JIS Japanese confidence = 0.01
+DEBUG:chardet.charsetprober:EUC-JP Japanese confidence = 0.01
+DEBUG:chardet.charsetprober:GB2312 Chinese confidence = 0.01
+DEBUG:chardet.charsetprober:EUC-KR Korean confidence = 0.01
+DEBUG:chardet.charsetprober:CP949 Korean confidence = 0.01
+DEBUG:chardet.charsetprober:Big5 Chinese confidence = 0.01
+DEBUG:chardet.charsetprober:EUC-TW Taiwan confidence = 0.01
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.image-net.org:80
+DEBUG:urllib3.connectionpool:http://www.image-net.org:80 "GET /api/text/imagenet.synset.geturls?wnid=n01341090 HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.afbini.gov.uk:80
+DEBUG:urllib3.connectionpool:http://www.afbini.gov.uk:80 "GET /em_07_-2.jpg HTTP/1.1" 404 295
+DEBUG:root:Synset ID: n01341090     HTTP Error: <Response [404]>
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.image-net.org:80
+DEBUG:urllib3.connectionpool:http://www.image-net.org:80 "GET /api/text/imagenet.synset.geturls?wnid=n01484447 HTTP/1.1" 200 6509
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.flmnh.ufl.edu:80
+DEBUG:urllib3.connectionpool:http://www.flmnh.ufl.edu:80 "GET /fish/gallery/descript/Longfinmako/sfin.jpg HTTP/1.1" 301 284
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.floridamuseum.ufl.edu:443
+DEBUG:urllib3.connectionpool:https://www.floridamuseum.ufl.edu:443 "GET /fish/gallery/descript/Longfinmako/sfin.jpg HTTP/1.1" 410 337
+DEBUG:root:Synset ID: n01484447     HTTP Error: <Response [410]>
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): cmsdata.iucn.org:80
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.image-net.org:80
+DEBUG:urllib3.connectionpool:http://www.image-net.org:80 "GET /api/text/imagenet.synset.geturls?wnid=n01484447 HTTP/1.1" 200 6509
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): pubpages.unh.edu:80
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): dsc.discovery.com:80
+DEBUG:urllib3.connectionpool:http://dsc.discovery.com:80 "GET /sharks/shark-types/shortfin-mako-shark.jpg HTTP/1.1" 301 102
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.discovery.com:80
+DEBUG:urllib3.connectionpool:http://www.discovery.com:80 "GET /sharks/shark-types/shortfin-mako-shark.jpg HTTP/1.1" 301 0
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.foodnetwork.com:80
+DEBUG:urllib3.connectionpool:http://www.foodnetwork.com:80 "GET /not-available.html HTTP/1.1" 301 0
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.foodnetwork.com:443
+DEBUG:urllib3.connectionpool:https://www.foodnetwork.com:443 "GET /not-available.html HTTP/1.1" 200 2626
+DEBUG:root:Synset ID: n01484447     HTTP Error: <Response [200]>
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.arkive.org:80
+DEBUG:urllib3.connectionpool:http://www.arkive.org:80 "GET /media/623E89C7-5D4F-4789-ACEE-9894B77B8B00/Presentation.Large/photo.jpg HTTP/1.1" 302 0
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.wildscreen.org:443
+DEBUG:urllib3.connectionpool:https://www.wildscreen.org:443 "GET /arkive-closure/ HTTP/1.1" 200 None
+DEBUG:root:Synset ID: n01484447     HTTP Error: <Response [200]>
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.unrealdive.com:80
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.redorbit.com:80
+DEBUG:urllib3.connectionpool:http://www.redorbit.com:80 "GET /modules/imglib/download.php?Url=/modules/news/upload/055bca6d7f784e85767c33830899777a.jpg HTTP/1.1" 301 None
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.redorbit.com:443
+DEBUG:urllib3.connectionpool:https://www.redorbit.com:443 "GET /modules/imglib/download.php?Url=/modules/news/upload/055bca6d7f784e85767c33830899777a.jpg HTTP/1.1" 404 None
+DEBUG:root:Synset ID: n01484447     HTTP Error: <Response [404]>
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.sharktrust.org:80
+DEBUG:urllib3.connectionpool:http://www.sharktrust.org:80 "GET /sharknew_images/12190/t_med_Sharm%20augustus%202008%20097.JPG HTTP/1.1" 301 None
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.sharktrust.org:443
+DEBUG:urllib3.connectionpool:https://www.sharktrust.org:443 "GET /sharknew_images/12190/t_med_Sharm%20augustus%202008%20097.JPG HTTP/1.1" 404 None
+DEBUG:root:Synset ID: n01484447     HTTP Error: <Response [404]>
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.newenglandsharks.com:80
+DEBUG:urllib3.connectionpool:http://www.newenglandsharks.com:80 "GET /porbeaglecropLabrador.jpg HTTP/1.1" 404 236
+DEBUG:root:Synset ID: n01484447     HTTP Error: <Response [404]>
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): coastalscience.noaa.gov:80
+DEBUG:urllib3.connectionpool:http://coastalscience.noaa.gov:80 "GET /images/education/sharks.jpg HTTP/1.1" 301 0
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): coastalscience.noaa.gov:443
+DEBUG:urllib3.connectionpool:https://coastalscience.noaa.gov:443 "GET /images/education/sharks.jpg HTTP/1.1" 404 144547
+DEBUG:root:Synset ID: n01484447     HTTP Error: <Response [404]>
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.hamptons.com:80
+DEBUG:urllib3.connectionpool:http://www.hamptons.com:80 "GET /gallery/articles/2161b.jpg HTTP/1.1" 404 1024
+DEBUG:root:Synset ID: n01484447     HTTP Error: <Response [404]>
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.cbe21.com:80
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): images.seapics.com:80
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.conservation.org:80
+DEBUG:urllib3.connectionpool:http://www.conservation.org:80 "GET /SiteCollectionImages/158x100/158x100_article_animal_olympic_6.jpg HTTP/1.1" 301 150
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.conservation.org:443
+DEBUG:urllib3.connectionpool:https://www.conservation.org:443 "GET /SiteCollectionImages/158x100/158x100_article_animal_olympic_6.jpg HTTP/1.1" 200 78323
+DEBUG:root:Synset ID: n01484447     HTTP Error: <Response [200]>
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.wildblue.co.nz:80
+DEBUG:urllib3.connectionpool:http://www.wildblue.co.nz:80 "GET /images/mako.jpg HTTP/1.1" 301 246
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): wildblue.co.nz:443
+DEBUG:urllib3.connectionpool:https://wildblue.co.nz:443 "GET /images/mako.jpg HTTP/1.1" 404 None
+DEBUG:root:Synset ID: n01484447     HTTP Error: <Response [404]>
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.underwatervideo.co.za:80
+DEBUG:urllib3.connectionpool:http://www.underwatervideo.co.za:80 "GET /images/blueShark.jpg HTTP/1.1" 404 315
+DEBUG:root:Synset ID: n01484447     HTTP Error: <Response [404]>
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.arkive.org:80
+DEBUG:urllib3.connectionpool:http://www.arkive.org:80 "GET /media/9FAA2E1F-92E2-47B8-9046-285F5DD6D574/Presentation.Thumb/photo.jpg HTTP/1.1" 302 0
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.wildscreen.org:443
+DEBUG:urllib3.connectionpool:https://www.wildscreen.org:443 "GET /arkive-closure/ HTTP/1.1" 200 None
+DEBUG:root:Synset ID: n01484447     HTTP Error: <Response [200]>
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.geocities.com:80
+DEBUG:urllib3.connectionpool:http://www.geocities.com:80 "GET /deadliestsharks/pics/mako2.jpg HTTP/1.1" 404 0
+DEBUG:root:Synset ID: n01484447     HTTP Error: <Response [404]>
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.marinethemes.com:80
+DEBUG:urllib3.connectionpool:http://www.marinethemes.com:80 "GET /images/mako.jpg HTTP/1.1" 302 224
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): marinethemes.com:443
+DEBUG:urllib3.connectionpool:https://marinethemes.com:443 "GET /images/mako.jpg HTTP/1.1" 301 0
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.marinethemes.com:443
+DEBUG:urllib3.connectionpool:https://www.marinethemes.com:443 "GET /images/mako.jpg HTTP/1.1" 404 None
+DEBUG:root:Synset ID: n01484447     HTTP Error: <Response [404]>
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.goldenstateimages.com:80
+DEBUG:urllib3.connectionpool:http://www.goldenstateimages.com:80 "GET /sql_images/thumbs/SHM-022c.jpg HTTP/1.1" 302 0
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): goldenstateimages.photoshelter.com:443
+DEBUG:urllib3.connectionpool:https://goldenstateimages.photoshelter.com:443 "GET /rs?data=3Sa4x6S01_P6VLvt..DfUU50FAVX9KOw3j88chULvA92UQk1BieUWPVqqdFxlQJVmvRIKxWfmvLBwJDNHDARGnu3OOG1BI8jmbPTFxZ6d1aCcdywSUg4dNC8ZYdmicJC76tkNzZc.LWPxy65FV5fOx6ClkD4ZaxEyFM- HTTP/1.1" 302 0
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.goldenstateimages.com:443
+DEBUG:urllib3.connectionpool:https://www.goldenstateimages.com:443 "GET /rs?data=3Sa4x6S01_P6VLvt..DfUU50FXRC55Ll0ehDjuaebsihYNfx7TvSsX730q.2MdbofPnmp5QclKR_XQFqdCrjyx3CrKUSTi0iXl3gQilyKvxouT_EmPyMKIaPNhW_Ysezfb1sbWwEHRS5EYj3Z09Nfd.5D.e_2y4BEMwZ7vuJjLB9LRPwI6bCdwt6sqUV5g-- HTTP/1.1" 302 0
+DEBUG:urllib3.connectionpool:https://www.goldenstateimages.com:443 "GET /sql_images/thumbs/SHM-022c.jpg HTTP/1.1" 404 None
+DEBUG:root:Synset ID: n01484447     HTTP Error: <Response [404]>
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.animalidalmondo.com:80
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.sharktrust.org:80
+DEBUG:urllib3.connectionpool:http://www.sharktrust.org:80 "GET /sharknew_images/12190/t_med_Sharm%20augustus%202008%20097.JPG HTTP/1.1" 301 None
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.sharktrust.org:443
+DEBUG:urllib3.connectionpool:https://www.sharktrust.org:443 "GET /sharknew_images/12190/t_med_Sharm%20augustus%202008%20097.JPG HTTP/1.1" 404 None
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): week.divebums.com:80
+DEBUG:urllib3.connectionpool:http://week.divebums.com:80 "GET /2006/Jul10-2006/mako-shark_tracy-clark.jpg HTTP/1.1" 200 52773
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.sharktrust.org:80
+DEBUG:urllib3.connectionpool:http://www.sharktrust.org:80 "GET /sharknew_images/12190/t_med_Sharm%20augustus%202008%20097.JPG HTTP/1.1" 301 None
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.sharktrust.org:443
+DEBUG:urllib3.connectionpool:https://www.sharktrust.org:443 "GET /sharknew_images/12190/t_med_Sharm%20augustus%202008%20097.JPG HTTP/1.1" 404 None
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.elasmodiver.com:80
+DEBUG:urllib3.connectionpool:http://www.elasmodiver.com:80 "GET /Sharkive%20images/Shortfin%20Mako%20Shark%20024.jpg HTTP/1.1" 200 80193

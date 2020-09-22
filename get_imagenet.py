@@ -16,14 +16,13 @@ import numpy as np
 import cv2
 import PIL.Image
 import urllib
-import logging
 from bs4 import BeautifulSoup
 
-num_categories = 500
-num_images = 150
+num_categories = 5#00
+num_images = 15#0
 
-category_path = f'/data/imagenet_cmc'
-#category_path = f'/home/clionaodoherty/Desktop/imagenet_categories'
+#category_path = f'/data/imagenet_cmc'
+category_path = f'/home/clionaodoherty/Desktop/imagenet_categories'
 list_path = f'{category_path}/imagenet_categs_{num_categories}.json'
 test_categs = []
 
@@ -43,14 +42,13 @@ else:
     with open(f'{list_path}','w') as f:
         json.dump(test_categs,f)
 
-logging.basicConfig(filename='./imagenet_download.log',level=logging.DEBUG)
-
 def url_to_image(url):
     # download the image, convert it to a NumPy array, and then read it into OpenCV format
     resp = urllib.request.urlopen(url)
+    code = resp.getcode()
     image = np.asarray(bytearray(resp.read()), dtype="uint8")
     image = cv2.imdecode(image, cv2.IMREAD_COLOR)
-    return image
+    return image, code
 
 for synset in test_categs:
     img_path = f'{category_path}/{synset}'
@@ -61,9 +59,6 @@ for synset in test_categs:
     soup = BeautifulSoup(urls.content, 'html.parser')
     soup = str(soup)
     url_list = soup.split('\r\n')
-    
-    img_rows, img_cols = 32, 32
-    input_shape = (img_rows, img_cols, 3)
     
     #TODO: use a generator to do next for saving the images
     _tested = []
@@ -76,14 +71,12 @@ for synset in test_categs:
                 print('image already saved')
             else:
                 try:
-                    I = url_to_image(_url)
-                    if (len(I.shape))==3: 
-                        cv2.imwrite(save_path,I)
+                    I, code = url_to_image(_url)
+                    print(f'synset ID {synset}  response {code}')
+                    if I == None:
+                        print('I is None')
+                    if cv2.imwrite(save_path,I):
                         print(f'{synset} image saved successfully')
                 except:
-                    try:
-                        E = requests.get(_url)
-                        print(f'image not found from synset url   {E}')
-                        logging.debug(f'Synset ID: {synset}     HTTP Error: {E}')
-                    except:
-                        continue
+                    print(f'image failed to save')
+                    

@@ -1,32 +1,17 @@
 import argparse
-import os
-import scipy.io
 import pickle
-import time
-from collections import OrderedDict
-
-#import faiss
 import numpy as np
-from sklearn.metrics.cluster import normalized_mutual_info_score
+import os
+
 import torch
 import torch.nn as nn
-import torch.nn.parallel
-import torch.backends.cudnn as cudnn
-import torch.optim
 import torch.utils.data
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from torchvision.models import alexnet
-import datetime
-
-#import clustering
-import models
-from util import AverageMeter
 
 from dataset import RGB2Lab
 from models.alexnet import TemporalAlexNetCMC
-from train_CMC import get_color_distortion
-
 
 def parse_option():
 
@@ -34,12 +19,22 @@ def parse_option():
 
     parser.add_argument('--model_path', type=str, help='model to get activations of')
     parser.add_argument('--save_path', type=str, help='path to save activations')
+    parser.add_argument('--image_path', type=str, help='path to images for activation analysis')
     parser.add_argument('--transform', type=str, choices=['Lab','distort'], help='color transform to use')
     parser.add_argument('--supervised', type=bool, default=False, help='whether to test against supervised AlexNet')
 
     opt = parser.parse_args()
 
     return opt
+
+def get_color_distortion(s=1.0):
+    color_jitter = transforms.ColorJitter(0.8*s, 0.8*s, 0.8*s, 0.2*s)
+    rnd_color_jitter = transforms.RandomApply([color_jitter],p=0.8)
+    rnd_gray = transforms.RandomGrayscale(p=0.2)
+    color_distort = transforms.Compose([
+        rnd_color_jitter,
+        rnd_gray])
+    return color_distort
 
 class ImageFolderWithPaths(datasets.ImageFolder):
     """Custom dataset that includes image file paths. Extends
@@ -78,7 +73,9 @@ def compute_features(dataloader, model, N):
             act[label[0]] = _model_feats
     return act
 
-def get_activations(offset, args):
+def get_activations(imgPath, args):
+    
+    #transform the input images
     mean = [(0 + 100) / 2, (-86.183 + 98.233) / 2, (-107.857 + 94.478) / 2]
     std = [(100 - 0) / 2, (86.183 + 98.233) / 2, (107.857 + 94.478) / 2]
     if args.transform == 'Lab':
@@ -93,19 +90,21 @@ def get_activations(offset, args):
         transforms.ToTensor(),
         normalize,
     ])
-    dataset = ImageFolderWithPaths(offset, transform=train_transform)
+    
+    #load the data
+    dataset = ImageFolderWithPaths(imgPath, transform=train_transform)
     dataloader = torch.utils.data.DataLoader(dataset,
                                             batch_size=1,
                                             num_workers=0,
                                             pin_memory=True,
                                             shuffle = False)
+    
+    #compute the features
     features = compute_features(dataloader, model, len(dataset))
+    
     return features
 
-
-if __name__ == '__main__':
-    args = parse_option()
-
+def main(args):
     if not args.supervised:
         modelpth = args.model_path
         checkpoint = torch.load(modelpth)['model']
@@ -117,15 +116,15 @@ if __name__ == '__main__':
         model = alexnet(pretrained=True)
         model.cuda()
 
-    image_pth = '/home/clionaodoherty/imagenet_samples/' 
-    act = get_activations(image_pth, args)
+    image_path = args.image_path 
+    act = get_activations(image_path, args)
     print('activations computed')
 
-    with open('/home/clionaodoherty/CMC/category_dict.pickle','rb') as f:
-        categories= pickle.load(f)
-    categories = list(categories.values())
-    categories = [list(k.keys()) for k in categories]
-    categories = [item for sublist in categories for item in sublist]
+    #TODO: make this create a list of categories from the image directory
+    categories = []
+    for d in os.listdir(image_path):
+        if os.path.isdir(f'{image_path}/{d}'):
+            categories.append(d)
 
     layers = ['conv1', 'conv2', 'conv3', 'conv4', 'conv5', 'fc6', 'fc7']
     activations = {k:{l:[] for l in layers} for k in categories}
@@ -150,3 +149,7 @@ if __name__ == '__main__':
 
     with open(args.save_path, 'wb') as handle:
         pickle.dump(activations, handle)
+
+if __name__ == '__main__':
+    args = parse_option()
+    main(args)
