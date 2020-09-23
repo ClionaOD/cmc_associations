@@ -86,6 +86,6 @@ for synset in test_categs:
                     else:
                         print('image not correct size')
                 
-                except (urllib.error.HTTPError, urllib.error.URLError, ValueError):
+                except:
                     print('Error with this url')
                     
