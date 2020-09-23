@@ -82,6 +82,6 @@ for synset in test_categs:
                     else:
                         print('image not saved')
                 
-                except urllib.error.HTTPError:
-                    print('HTTP Error')
+                except (urllib.error.HTTPError, urllib.error.URLError):
+                    print('Error with this url')
                     
