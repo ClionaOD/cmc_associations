@@ -77,11 +77,13 @@ for synset in test_categs:
                     if type(I) == None:
                         print('I is None')
                         continue
-                    
-                    if cv2.imwrite(save_path,I):
-                        print(f'{synset} image saved successfully')
+                    if len(I.shape == 3):
+                        if cv2.imwrite(save_path,I):
+                            print(f'{synset} image saved successfully')
+                        else:
+                            print('image not saved')
                     else:
-                        print('image not saved')
+                        print('image not correct size')
                 
                 except (urllib.error.HTTPError, urllib.error.URLError):
                     print('Error with this url')
