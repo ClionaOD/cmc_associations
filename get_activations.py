@@ -73,7 +73,7 @@ def compute_features(dataloader, model, N):
             act[label[0]] = _model_feats
     return act
 
-def get_activations(imgPath, args):
+def get_activations(imgPath, model, args):
     
     #transform the input images
     mean = [(0 + 100) / 2, (-86.183 + 98.233) / 2, (-107.857 + 94.478) / 2]
@@ -117,7 +117,7 @@ def main(args):
         model.cuda()
 
     image_path = args.image_path 
-    act = get_activations(image_path, args)
+    act = get_activations(image_path, model, args)
     print('activations computed')
 
     #TODO: make this create a list of categories from the image directory
