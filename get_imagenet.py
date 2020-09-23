@@ -18,11 +18,11 @@ import PIL.Image
 import urllib
 from bs4 import BeautifulSoup
 
-num_categories = 5#00
-num_images = 15#0
+num_categories = 500
+num_images = 150
 
-#category_path = f'/data/imagenet_cmc'
-category_path = f'/home/clionaodoherty/Desktop/imagenet_categories'
+category_path = f'/data/imagenet_cmc'
+#category_path = f'/home/clionaodoherty/Desktop/imagenet_categories'
 list_path = f'{category_path}/imagenet_categs_{num_categories}.json'
 test_categs = []
 
