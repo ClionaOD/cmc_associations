@@ -75,10 +75,13 @@ for synset in test_categs:
                     print(f'synset ID {synset}  response {code}')
                     if I == None:
                         print('I is None')
+                        continue
+                    
                     if cv2.imwrite(save_path,I):
                         print(f'{synset} image saved successfully')
                     else:
                         print('image not saved')
+                
                 except urllib.error.HTTPError:
                     print('HTTP Error')
                     
