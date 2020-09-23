@@ -70,20 +70,20 @@ for synset in test_categs:
             if os.path.exists(save_path):
                 print('image already saved')
             else:
-                try:
-                    I, code = url_to_image(_url)
-                    print(f'synset ID {synset}  response {code}')
-                    if I == None:
-                        print('I is None')
-                    if cv2.imwrite(save_path,I):
-                        print(f'{synset} image saved successfully')
-                    else:
-                        print('image not saved')
-                except:
+                #try:
+                I, code = url_to_image(_url)
+                print(f'synset ID {synset}  response {code}')
+                if I == None:
+                    print('I is None')
+                if cv2.imwrite(save_path,I):
+                    print(f'{synset} image saved successfully')
+                else:
+                    print('image not saved')
+                """except:
                     try:
                         E = requests.get(_url)
                         print(f'image not found from synset url  {E}')
                     except:
                         continue
-                    print(f'image failed to save')
+                    print(f'image failed to save')"""
                     
