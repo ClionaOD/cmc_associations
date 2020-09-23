@@ -78,5 +78,6 @@ for synset in test_categs:
                     if cv2.imwrite(save_path,I):
                         print(f'{synset} image saved successfully')
                 except:
-                    print(f'image failed to save')
+                    code = requests.get(_url)
+                    print(f'image failed to save    {code}')
                     
