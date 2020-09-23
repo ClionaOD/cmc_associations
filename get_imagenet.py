@@ -74,10 +74,11 @@ for synset in test_categs:
                     I, code = url_to_image(_url)
                     print(f'synset ID {synset}  response {code}')
                     
-                    if type(I) == None:
+                    if I is None:
                         print('I is None')
                         continue
-                    if len(I.shape == 3):
+                    
+                    if len(I.shape) == 3:
                         if cv2.imwrite(save_path,I):
                             print(f'{synset} image saved successfully')
                         else:
