@@ -73,7 +73,8 @@ for synset in test_categs:
                 try:
                     I, code = url_to_image(_url)
                     print(f'synset ID {synset}  response {code}')
-                    if I == None:
+                    
+                    if type(I) == None:
                         print('I is None')
                         continue
                     
