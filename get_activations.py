@@ -19,7 +19,7 @@ def parse_option():
 
     parser.add_argument('--model_path', type=str, help='model to get activations of')
     parser.add_argument('--save_path', type=str, help='path to save activations')
-    #parser.add_argument('--image_path', type=str, help='path to images for activation analysis')
+    parser.add_argument('--image_path', type=str, help='path to images for activation analysis')
     parser.add_argument('--transform', type=str, choices=['Lab','distort'], help='color transform to use')
     parser.add_argument('--supervised', type=bool, default=False, help='whether to test against supervised AlexNet')
 
