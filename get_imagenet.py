@@ -20,11 +20,11 @@ import urllib
 from bs4 import BeautifulSoup
 from joblib import Parallel, delayed
 
-num_categories = 500
-num_images = 150
+num_categories = 5#00
+num_images = 15#0
 
-category_path = f'/data/imagenet_cmc'
-#category_path = f'/home/clionaodoherty/Desktop/imagenet_categories'
+#category_path = f'/data/imagenet_cmc'
+category_path = f'/home/clionaodoherty/Desktop/imagenet_categories'
 list_path = f'{category_path}/imagenet_categs_{num_categories}.json'
 test_categs = []
 
@@ -53,7 +53,7 @@ def url_to_image(url):
     return image, code
 
 def download_picture(url, num_images, img_path):
-    save_path = f'{img_path}/img_{hashlib.md5(url).hexdigest()}.jpg'
+    save_path = f'{img_path}/img_{hashlib.md5(url.encode()).hexdigest()}.jpg'
     _tested.append(url)
     if os.path.exists(save_path):
         print('image already saved')
