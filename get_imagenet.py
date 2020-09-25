@@ -17,6 +17,7 @@ import cv2
 import PIL.Image
 import urllib
 from bs4 import BeautifulSoup
+from joblib import Parallel, delayed
 
 num_categories = 500
 num_images = 150
@@ -50,6 +51,31 @@ def url_to_image(url):
     image = cv2.imdecode(image, cv2.IMREAD_COLOR)
     return image, code
 
+def download_picture(url, num_images, img_path):
+    save_path = f'{img_path}/img_{len(os.listdir(img_path))}.jpg'
+    _tested.append(url)
+    if os.path.exists(save_path):
+        print('image already saved')
+    else:
+        try:
+            I, code = url_to_image(url)
+            print(f'synset ID {synset}  response {code}')
+            
+            if I is None:
+                print('I is None')
+                return
+            
+            if len(I.shape) == 3:
+                if cv2.imwrite(save_path,I):
+                    print(f'{synset} image saved successfully')
+                else:
+                    print('image not saved')
+            else:
+                print('image not correct size')
+        
+        except:
+            print('Error with this url')
+
 for synset in test_categs:
     img_path = f'{category_path}/{synset}'
     if not os.path.exists(img_path):
@@ -59,33 +85,7 @@ for synset in test_categs:
     soup = BeautifulSoup(urls.content, 'html.parser')
     soup = str(soup)
     url_list = soup.split('\r\n')
-    
-    #TODO: use a generator to do next for saving the images
+
     _tested = []
-    while len(os.listdir(img_path)) < num_images and not len(_tested) == len(url_list):
-        _url = random.choice(url_list)
-        if not _url in _tested:
-            save_path = f'{img_path}/img_{len(os.listdir(img_path))}.jpg'
-            _tested.append(_url)
-            if os.path.exists(save_path):
-                print('image already saved')
-            else:
-                try:
-                    I, code = url_to_image(_url)
-                    print(f'synset ID {synset}  response {code}')
-                    
-                    if I is None:
-                        print('I is None')
-                        continue
-                    
-                    if len(I.shape) == 3:
-                        if cv2.imwrite(save_path,I):
-                            print(f'{synset} image saved successfully')
-                        else:
-                            print('image not saved')
-                    else:
-                        print('image not correct size')
-                
-                except:
-                    print('Error with this url')
-                    
+    random.shuffle(url_list)
+    Parallel(n_jobs=16)(delayed(download_picture)(url, num_images, img_path) for url in url_list)
