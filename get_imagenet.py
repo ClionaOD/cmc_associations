@@ -14,6 +14,7 @@ import random
 import os
 import numpy as np
 import cv2
+import hashlib
 import PIL.Image
 import urllib
 from bs4 import BeautifulSoup
@@ -52,7 +53,7 @@ def url_to_image(url):
     return image, code
 
 def download_picture(url, num_images, img_path):
-    save_path = f'{img_path}/img_{len(os.listdir(img_path))}.jpg'
+    save_path = f'{img_path}/img_{hashlib.md5(url).hexdigest()}.jpg'
     _tested.append(url)
     if os.path.exists(save_path):
         print('image already saved')
