@@ -53,29 +53,30 @@ def url_to_image(url):
     return image, code
 
 def download_picture(url, num_images, img_path):
-    save_path = f'{img_path}/img_{hashlib.md5(url.encode()).hexdigest()}.jpg'
-    _tested.append(url)
-    if os.path.exists(save_path):
-        print('image already saved')
-    else:
-        try:
-            I, code = url_to_image(url)
-            print(f'synset ID {synset}  response {code}')
-            
-            if I is None:
-                print('I is None')
-                return
-            
-            if len(I.shape) == 3:
-                if cv2.imwrite(save_path,I):
-                    print(f'{synset} image saved successfully')
+    if len(os.listdir(img_path)) < num_images:
+        save_path = f'{img_path}/img_{hashlib.md5(url.encode()).hexdigest()}.jpg'
+        _tested.append(url)
+        if os.path.exists(save_path):
+            print('image already saved')
+        else:
+            try:
+                I, code = url_to_image(url)
+                print(f'synset ID {synset}  response {code}')
+                
+                if I is None:
+                    print('I is None')
+                    return
+                
+                if len(I.shape) == 3:
+                    if cv2.imwrite(save_path,I):
+                        print(f'{synset} image saved successfully')
+                    else:
+                        print('image not saved')
                 else:
-                    print('image not saved')
-            else:
-                print('image not correct size')
-        
-        except:
-            print('Error with this url')
+                    print('image not correct size')
+            
+            except:
+                print('Error with this url')
 
 for synset in test_categs:
     img_path = f'{category_path}/{synset}'
