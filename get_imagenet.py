@@ -89,4 +89,4 @@ for synset in test_categs:
 
     _tested = []
     random.shuffle(url_list)
-    Parallel(n_jobs=32)(delayed(download_picture)(url, num_images, img_path) for url in url_list)
+    Parallel(n_jobs=64)(delayed(download_picture)(url, num_images, img_path) for url in url_list)
