@@ -90,5 +90,5 @@ for synset in test_categs:
 
     _tested = []
     random.shuffle(url_list)
-    if not len(_tested) == len(url_list):
+    while not len(_tested) == len(url_list):
         Parallel(n_jobs=64)(delayed(download_picture)(url, num_images, img_path) for url in url_list)
