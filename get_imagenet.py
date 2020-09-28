@@ -53,7 +53,7 @@ def url_to_image(url):
     return image, code
 
 def download_picture(url, num_images, img_path):
-    if len(os.listdir(img_path)) < num_images:
+    while len(os.listdir(img_path)) < num_images:
         save_path = f'{img_path}/img_{hashlib.md5(url.encode()).hexdigest()}.jpg'
         _tested.append(url)
         if os.path.exists(save_path):
