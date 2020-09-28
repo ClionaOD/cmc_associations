@@ -82,6 +82,8 @@ for synset in test_categs:
     img_path = f'{category_path}/{synset}'
     if not os.path.exists(img_path):
         os.makedirs(img_path)
+    else:
+        continue
 
     urls = requests.get(f'http://www.image-net.org/api/text/imagenet.synset.geturls?wnid={synset}')
     soup = BeautifulSoup(urls.content, 'html.parser')
