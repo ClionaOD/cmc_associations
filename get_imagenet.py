@@ -52,7 +52,7 @@ def url_to_image(url):
     image = cv2.imdecode(image, cv2.IMREAD_COLOR)
     return image, code
 
-def download_picture(url, num_images, img_path):
+def download_picture(url, num_images, img_path, synset):
     if len(os.listdir(img_path)) < num_images:
         save_path = f'{img_path}/img_{hashlib.md5(url.encode()).hexdigest()}.jpg'
         #_tested.append(url)
@@ -93,6 +93,6 @@ def iter_synsets(synset, category_path):
 
     #_tested = []
     random.shuffle(url_list)
-    Parallel(n_jobs=32)(delayed(download_picture)(url, num_images, img_path) for url in url_list)
+    Parallel(n_jobs=-2)(delayed(download_picture)(url, num_images, img_path, synset) for url in url_list)
 
-Parallel(n_jobs=32)(delayed(iter_synsets)(synset, category_path) for synset in test_categs)
+Parallel(n_jobs=-2)(delayed(iter_synsets)(synset, category_path) for synset in test_categs)
