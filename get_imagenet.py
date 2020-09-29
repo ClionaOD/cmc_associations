@@ -93,9 +93,12 @@ def iter_synsets(synset, category_path):
     soup = str(soup)
     url_list = soup.split('\r\n')
 
-    #saved_lst = [hashlib.md5(img.encode()).hexdigest() for img in os.listdir(img_path)]
+    hash_dict = { hashlib.md5(url.encode()).hexdigest() : url for url in url_list}
+    saved_lst = [img.split('.')[0].split('_')[-1] for img in os.listdir(img_path)]
+    
+    keep_dict = {k:v for k,v in hash_dict.items() if not k in saved_lst}
+    url_list = list(keep_dict.values())
 
-    #_tested = []
     random.shuffle(url_list)
     Parallel(n_jobs=-2)(delayed(download_picture)(url, num_images, img_path, synset) for url in url_list)
 
