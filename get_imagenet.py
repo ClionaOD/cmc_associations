@@ -78,6 +78,7 @@ def download_picture(url, num_images, img_path):
                     return
             
             except:
+                raise
                 print('Error with this url')
                 return
 
