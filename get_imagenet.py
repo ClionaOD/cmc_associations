@@ -55,7 +55,7 @@ def url_to_image(url):
 def download_picture(url, num_images, img_path):
     if len(os.listdir(img_path)) < num_images:
         save_path = f'{img_path}/img_{hashlib.md5(url.encode()).hexdigest()}.jpg'
-        _tested.append(url)
+        #_tested.append(url)
         if os.path.exists(save_path):
             print('image already saved')
         else:
@@ -78,18 +78,18 @@ def download_picture(url, num_images, img_path):
             except:
                 print('Error with this url')
 
-for synset in test_categs:
+def iter_synsets(synset, category_path):
     img_path = f'{category_path}/{synset}'
     if not os.path.exists(img_path):
         os.makedirs(img_path)
-    else:
-        continue
 
     urls = requests.get(f'http://www.image-net.org/api/text/imagenet.synset.geturls?wnid={synset}')
     soup = BeautifulSoup(urls.content, 'html.parser')
     soup = str(soup)
     url_list = soup.split('\r\n')
 
-    _tested = []
+    #_tested = []
     random.shuffle(url_list)
     Parallel(n_jobs=64)(delayed(download_picture)(url, num_images, img_path) for url in url_list)
+
+Parallel(n_jobs=64)(delayed(iter_synsets)(synset, category_path) for synset in test_categs)
