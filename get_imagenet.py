@@ -68,6 +68,8 @@ def download_picture(url, num_images, img_path, synset):
                 
                 if I is None:
                     print('I is None')
+                    with open('./poor_links.txt','a') as f:
+                        f.write(f'{url}\n')
                     return
                 
                 if len(I.shape) == 3:
@@ -81,6 +83,8 @@ def download_picture(url, num_images, img_path, synset):
             
             except:
                 print('Error with this url')
+                with open('./poor_links.txt','a') as f:
+                    f.write(f'{url}\n')
                 return
 
 def iter_synsets(synset, category_path):
@@ -96,7 +100,11 @@ def iter_synsets(synset, category_path):
     hash_dict = { hashlib.md5(url.encode()).hexdigest() : url for url in url_list}
     saved_lst = [img.split('.')[0].split('_')[-1] for img in os.listdir(img_path)]
     
-    keep_dict = {k:v for k,v in hash_dict.items() if not k in saved_lst}
+    with open('./poor_links.txt', 'r') as f:
+        poor_link = f.readlines()
+    poor_link = [i[:-1] for i in poor_link]
+    
+    keep_dict = {k:v for k,v in hash_dict.items() if not k in saved_lst and not k in poor_link}
     url_list = list(keep_dict.values())
 
     random.shuffle(url_list)
