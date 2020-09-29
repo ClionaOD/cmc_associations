@@ -44,6 +44,8 @@ else:
     with open(f'{list_path}','w') as f:
         json.dump(test_categs,f)
 
+test_categs = [synset for synset in test_categs if not os.path.exists(f'{category_path}/{synset}') or len(os.listdir(f'{category_path}/{synset}')) < num_images]
+
 def url_to_image(url):
     # download the image, convert it to a NumPy array, and then read it into OpenCV format
     resp = urllib.request.urlopen(url)
@@ -90,6 +92,8 @@ def iter_synsets(synset, category_path):
     soup = BeautifulSoup(urls.content, 'html.parser')
     soup = str(soup)
     url_list = soup.split('\r\n')
+
+    #saved_lst = [hashlib.md5(img.encode()).hexdigest() for img in os.listdir(img_path)]
 
     #_tested = []
     random.shuffle(url_list)
