@@ -58,6 +58,7 @@ def download_picture(url, num_images, img_path):
         #_tested.append(url)
         if os.path.exists(save_path):
             print('image already saved')
+            return
         else:
             try:
                 I, code = url_to_image(url)
@@ -74,9 +75,11 @@ def download_picture(url, num_images, img_path):
                         print('image not saved')
                 else:
                     print('image not correct size')
+                    return
             
             except:
                 print('Error with this url')
+                return
 
 def iter_synsets(synset, category_path):
     img_path = f'{category_path}/{synset}'
