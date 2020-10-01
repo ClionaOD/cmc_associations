@@ -50,10 +50,10 @@ test_categs = [synset for synset in test_categs if not os.path.exists(f'{categor
 
 def url_to_image(url):
     # download the image, convert it to a NumPy array, and then read it into OpenCV format
-    retries = Retry(connect=5, read=2, redirect=5, backoff_factor=0.1)
-    http = PoolManager(retries=retries)
-    resp = http.request('GET', url)
-    #resp = urllib.request.urlopen(url)
+    #retries = Retry(connect=5, read=2, redirect=5, backoff_factor=0.1)
+    #http = PoolManager(retries=retries)
+    #resp = http.request('GET', url)
+    resp = urllib.request.urlopen(url)
     code = resp.getcode()
     image = np.asarray(bytearray(resp.read()), dtype="uint8")
     image = cv2.imdecode(image, cv2.IMREAD_COLOR)
@@ -113,6 +113,6 @@ def iter_synsets(synset, category_path):
     url_list = list(keep_dict.values())
 
     random.shuffle(url_list)
-    Parallel(n_jobs=16)(delayed(download_picture)(url, num_images, img_path, synset) for url in url_list)
+    Parallel(n_jobs=8)(delayed(download_picture)(url, num_images, img_path, synset) for url in url_list)
 
-Parallel(n_jobs=32)(delayed(iter_synsets)(synset, category_path) for synset in test_categs)
+Parallel(n_jobs=16)(delayed(iter_synsets)(synset, category_path) for synset in test_categs)
