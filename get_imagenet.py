@@ -108,6 +108,6 @@ def iter_synsets(synset, category_path):
     url_list = list(keep_dict.values())
 
     random.shuffle(url_list)
-    Parallel(n_jobs=4*16)(delayed(download_picture)(url, num_images, img_path, synset) for url in url_list)
+    Parallel(n_jobs=16)(delayed(download_picture)(url, num_images, img_path, synset) for url in url_list)
 
-Parallel(n_jobs=4*16)(delayed(iter_synsets)(synset, category_path) for synset in test_categs)
+Parallel(n_jobs=32)(delayed(iter_synsets)(synset, category_path) for synset in test_categs)
