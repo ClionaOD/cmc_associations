@@ -1,5 +1,5 @@
 #!/bin/bash
-# 
+# TEST PATHS
 
 python3 /home/clionaodoherty/cmc_associations/get_rdms.py \
     --image_path /home/clionaodoherty/cmc_associations/test_imagenet \
