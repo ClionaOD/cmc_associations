@@ -106,9 +106,15 @@ def get_activations(imgPath, model, args):
 
 def main(args):
     for m in os.listdir(args.model_path):
+        #movieLab doesn't have key ['model']
+        #authorLab doesn't have key ['model']
+        #random doesn't have key ['model']
         if not args.supervised:
             modelpth = os.path.join(args.model_path,m)
-            checkpoint = torch.load(modelpth)['model']
+            if 'finetune' in m:
+                checkpoint = torch.load(modelpth)['model']
+            else:
+                checkpoint = torch.load(modelpth)
 
             model = TemporalAlexNetCMC()
             model.load_state_dict(checkpoint)
