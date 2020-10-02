@@ -7,4 +7,5 @@ python3 /home/clionaodoherty/cmc_associations/lch_comparison.py \
     --save_path /home/clionaodoherty/cmc_associations/results/test/test_results.pickle \
     --rdm_path /home/clionaodoherty/cmc_associations/rdms/test \
     --save_lch True \
-    --lch_path /home/clionaodoherty/cmc_associations 
+    --lch_path /home/clionaodoherty/cmc_associations \
+    --correlation spearman
