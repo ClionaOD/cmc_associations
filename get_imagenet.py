@@ -112,4 +112,4 @@ def iter_synsets(synset, category_path):
     for url in url_list:
         download_picture(url, num_images, img_path, synset)
 
-Parallel(n_jobs=16)(delayed(iter_synsets)(synset, category_path) for synset in test_categs)
+Parallel(n_jobs=64)(delayed(iter_synsets)(synset, category_path) for synset in test_categs)
