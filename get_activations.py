@@ -105,50 +105,56 @@ def get_activations(imgPath, model, args):
     return features
 
 def main(args):
-    if not args.supervised:
-        modelpth = args.model_path
-        checkpoint = torch.load(modelpth)['model']
+    for m in os.listdir(args.model_path):
+        if not args.supervised:
+            modelpth = os.path.join(args.model_path,m)
+            checkpoint = torch.load(modelpth)['model']
 
-        model = TemporalAlexNetCMC()
-        model.load_state_dict(checkpoint)
-        model.cuda()
-    else:
-        model = alexnet(pretrained=True)
-        model.cuda()
+            model = TemporalAlexNetCMC()
+            model.load_state_dict(checkpoint)
+            model.cuda()
+        else:
+            model = alexnet(pretrained=True)
+            model.cuda()
 
-    image_path = args.image_path 
-    act = get_activations(image_path, model, args)
-    print('activations computed')
+        image_path = args.image_path 
+        act = get_activations(image_path, model, args)
+        print('activations computed')
 
-    #TODO: make this create a list of categories from the image directory
-    categories = []
-    for d in os.listdir(image_path):
-        if os.path.isdir(f'{image_path}/{d}'):
-            categories.append(d)
+        categories = []
+        for d in os.listdir(image_path):
+            if os.path.isdir(f'{image_path}/{d}'):
+                categories.append(d)
 
-    layers = ['conv1', 'conv2', 'conv3', 'conv4', 'conv5', 'fc6', 'fc7']
-    activations = {k:{l:[] for l in layers} for k in categories}
+        layers = ['conv1', 'conv2', 'conv3', 'conv4', 'conv5', 'fc6', 'fc7']
+        activations = {k:{l:[] for l in layers} for k in categories}
 
-    act_list = list(act.items()) #this is list of tuples len 50*34, x[0] is the path x[1] is the list of acts one per layer
+        act_list = list(act.items()) #this is list of tuples len 50*34, x[0] is the path x[1] is the list of acts one per layer
 
-    for path, activation_list in act_list:
+        for path, activation_list in act_list:
+            for label in categories:
+                if label in path:
+                    for idx, l in enumerate(layers):
+                        activations[label][l].append(activation_list[idx])
+
+        print('calculating mean activations')
         for label in categories:
-            if label in path:
-                for idx, l in enumerate(layers):
-                    activations[label][l].append(activation_list[idx])
+            for l in layers:
+                mean = activations[label][l][0]
+                for i in activations[label][l][1:]:
+                    mean = np.concatenate((mean,i), axis=0)
+                mean = np.mean(mean, axis=0)
+                activations[label][l] = mean
+        print('done ... saving')
 
-    print('calculating mean activations')
-    for label in categories:
-        for l in layers:
-            mean = activations[label][l][0]
-            for i in activations[label][l][1:]:
-                mean = np.concatenate((mean,i), axis=0)
-            mean = np.mean(mean, axis=0)
-            activations[label][l] = mean
-    print('done ... saving')
-
-    with open(args.save_path, 'wb') as handle:
-        pickle.dump(activations, handle)
+        if not args.supervised:
+            _file = m.split('_')[0]
+            _save = f'{args.save_path}/{_file}_activations.pickle'
+        else:
+            _save = f'{args.save_path}/supervised_activations.pickle'
+        
+        with open(_save, 'wb') as handle:
+            pickle.dump(activations, handle)
 
 if __name__ == '__main__':
     args = parse_option()
