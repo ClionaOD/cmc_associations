@@ -16,7 +16,7 @@ def parse_option():
     parser.add_argument('--save_lch', type=bool, default=False, help='whether to save the lch_df')
     parser.add_argument('--open_lch', type=str, default=False, help='whether to open a previously saved lch_df and path')
     parser.add_argument('--lch_path', type=str, help='path to save the lch_df')
-    parser.add_argument('--correlation', type=str, default='kendalltau', options=['kendalltau','spearman','pearson'], help='what correlation value to use')
+    parser.add_argument('--correlation', type=str, default='kendalltau', choices=['kendalltau','spearman','pearson'], help='what correlation value to use')
 
     opt = parser.parse_args()
 
