@@ -4,6 +4,7 @@ import nltk
 import pickle 
 import argparse
 import pandas as pd
+import numpy as np
 from nltk.corpus import wordnet as wn
 from skbio.stats.distance import mantel
 
@@ -55,6 +56,11 @@ def main(args):
     else:
         lch_df = calculate_lch(args)
 
+    lch_vals = lch_df.values
+    lch_vals = -(lch_vals - lch_vals[0][0])
+    np.fill_diagonal(lch_vals,0)
+    lch_df = pd.DataFrame(data=lch_vals, index=lch_df.index, columns=lch_df.columns)
+    
     corr_results = {k.split('_')[0] : None for k in os.listdir(args.rdm_path)}
     
     for model_file in os.listdir(args.rdm_path):
