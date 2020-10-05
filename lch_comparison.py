@@ -50,6 +50,8 @@ def calculate_lch(args):
     return lch_df
 
 def main(args):
+    wnids = os.listdir(args.image_path)
+    
     if args.open_lch:
         with open(f'{args.lch_path}/{len(wnids)}_categs_lch.pickle', 'rb') as f:
             lch_df = pickle.load(f)
