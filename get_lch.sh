@@ -8,4 +8,4 @@ python3 /home/clionaodoherty/cmc_associations/lch_comparison.py \
     --rdm_path /home/clionaodoherty/cmc_associations/rdms/test \
     --open_lch True \
     --lch_path /home/clionaodoherty/cmc_associations \
-    --correlation mantel
+    --correlation kendalltau
