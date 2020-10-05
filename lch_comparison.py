@@ -15,7 +15,7 @@ def parse_option():
     parser.add_argument('--save_path', type=str, help='path to save correlation results')
     parser.add_argument('--rdm_path', type=str, help='where to find the activation rdms')
     parser.add_argument('--save_lch', type=bool, default=False, help='whether to save the lch_df')
-    parser.add_argument('--open_lch', type=str, default=False, help='whether to open a previously saved lch_df and path')
+    parser.add_argument('--open_lch', type=bool, default=False, help='whether to open a previously saved lch_df and path')
     parser.add_argument('--lch_path', type=str, help='path to save the lch_df')
     parser.add_argument('--correlation', type=str, default='kendalltau', choices=['kendalltau','spearman','pearson'], help='what correlation value to use')
 
@@ -51,7 +51,7 @@ def calculate_lch(args):
 
 def main(args):
     if args.open_lch:
-        with open(args.open_lch, 'rb') as f:
+        with open(f'{args.lch_path}/{len(wnids)}_categs_lch.pickle', 'rb') as f:
             lch_df = pickle.load(f)
     else:
         lch_df = calculate_lch(args)
