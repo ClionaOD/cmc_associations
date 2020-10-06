@@ -51,7 +51,7 @@ if manual == True:
     wnids = os.listdir(category_path)
     wnids = [i for i in wnids if not 'json' in i and not 'to_test' in i]
     lens = {wnid: len(os.listdir(f'{category_path}/{wnid}')) for wnid in wnids}
-    lens = {k:v for k,v in lens.items() if not v == 150 and v > 130}
+    lens = {k:v for k,v in lens.items() if v >= 120 and v < 130}
     test_categs = list(lens.keys())
 
 #test_categs = [synset for synset in test_categs if not os.path.exists(f'{category_path}/{synset}') or len(os.listdir(f'{category_path}/{synset}')) < num_images]
