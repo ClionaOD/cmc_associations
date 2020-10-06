@@ -46,7 +46,7 @@ else:
     with open(f'{list_path}','w') as f:
         json.dump(test_categs,f)
 
-manual = True
+manual = False
 if manual == True:
     wnids = os.listdir(category_path)
     wnids = [i for i in wnids if not 'json' in i and not 'to_test' in i]
@@ -54,7 +54,8 @@ if manual == True:
     lens = {k:v for k,v in lens.items() if v >= 120 and v < 130}
     test_categs = list(lens.keys())
 
-#test_categs = [synset for synset in test_categs if not os.path.exists(f'{category_path}/{synset}') or len(os.listdir(f'{category_path}/{synset}')) < num_images]
+if not manual:
+    test_categs = [synset for synset in test_categs if not os.path.exists(f'{category_path}/{synset}') or len(os.listdir(f'{category_path}/{synset}')) < num_images]
 
 def url_to_image(url):
     # download the image, convert it to a NumPy array, and then read it into OpenCV format
