@@ -49,6 +49,7 @@ else:
 manual = True
 if manual == True:
     wnids = os.listdir(category_path)
+    wnids = [i for i in wnids if not 'json' in i and not 'to_test' in i]
     lens = {wnid: len(os.listdir(f'{category_path}/{wnid}')) for wnid in wnids}
     lens = {k:v for k,v in lens.items() if not v == 150 and v > 130}
     test_categs = list(lens.keys())
