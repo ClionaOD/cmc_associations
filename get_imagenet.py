@@ -46,7 +46,14 @@ else:
     with open(f'{list_path}','w') as f:
         json.dump(test_categs,f)
 
-test_categs = [synset for synset in test_categs if not os.path.exists(f'{category_path}/{synset}') or len(os.listdir(f'{category_path}/{synset}')) < num_images]
+manual = True
+if manual == True:
+    wnids = os.listdir(category_path)
+    lens = {wnid: len(os.listdir(f'{category_path}/{wnid}')) for wnid in wnids}
+    lens = {k:v for k,v in lens.items() if not v == 150 and v > 130}
+    test_categs = list(lens.keys())
+
+#test_categs = [synset for synset in test_categs if not os.path.exists(f'{category_path}/{synset}') or len(os.listdir(f'{category_path}/{synset}')) < num_images]
 
 def url_to_image(url):
     # download the image, convert it to a NumPy array, and then read it into OpenCV format
@@ -113,3 +120,4 @@ def iter_synsets(synset, category_path):
         download_picture(url, num_images, img_path, synset)
 
 Parallel(n_jobs=32)(delayed(iter_synsets)(synset, category_path) for synset in test_categs)
+
