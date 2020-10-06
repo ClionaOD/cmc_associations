@@ -16,7 +16,5 @@ if len(wnids) > 256:
 
 for wnid in mv_wnids:
     source = os.path.join(base_path,wnid)
-    dest = os.path.join(base_path,'to_test',wnid)
-    if not os.path.exists(dest):
-        os.makedirs(dest)
+    dest = os.path.join(base_path,'to_test')
     shutil.move(source,dest)
