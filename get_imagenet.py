@@ -78,7 +78,7 @@ def download_picture(url, num_images, img_path, synset):
                 
                 if I is None:
                     print('I is None')
-                    with open('./poor_links.txt','a') as f:
+                    with open('./redo_poor_links.txt','a') as f:
                         f.write(f'{url}\n')
                     return
                 
@@ -93,7 +93,7 @@ def download_picture(url, num_images, img_path, synset):
             
             except:
                 print('Error with this url')
-                with open('./poor_links.txt','a') as f:
+                with open('./redo_poor_links.txt','a') as f:
                     f.write(f'{url}\n')
                 return
 
@@ -110,7 +110,7 @@ def iter_synsets(synset, category_path):
     hash_dict = { hashlib.md5(url.encode()).hexdigest() : url for url in url_list}
     saved_lst = [img.split('.')[0].split('_')[-1] for img in os.listdir(img_path)]
     
-    with open('./poor_links.txt', 'r') as f:
+    with open('./redo_poor_links.txt', 'r') as f:
         poor_link = f.readlines()
     poor_link = [i[:-1] for i in poor_link]
     
