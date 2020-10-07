@@ -54,13 +54,8 @@ if manual == True:
     lens = {k:v for k,v in lens.items() if  v < 100 and v > 50}
     test_categs = list(lens.keys())
 
-new_categs = True
-if new_categs:
-    test_categs = [synset for synset in test_categs if not os.path.exists(f'{category_path}/{synset}')]
-
-
-#if not manual:
-    #test_categs = [synset for synset in test_categs if not os.path.exists(f'{category_path}/{synset}') or len(os.listdir(f'{category_path}/{synset}')) < num_images]
+if not manual:
+    test_categs = [synset for synset in test_categs if not os.path.exists(f'{category_path}/{synset}') or len(os.listdir(f'{category_path}/{synset}')) < num_images]
 
 def url_to_image(url):
     # download the image, convert it to a NumPy array, and then read it into OpenCV format
