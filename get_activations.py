@@ -13,7 +13,7 @@ from torchvision.models import alexnet
 from dataset import RGB2Lab
 from models.alexnet import TemporalAlexNetCMC
 
-def parse_option():
+def parse_option(): 
 
     parser = argparse.ArgumentParser('argument for activations')
 
@@ -106,6 +106,7 @@ def get_activations(imgPath, model, args):
 
 def main(args, model_weights=''):
     if not args.supervised:
+        print('not supervised')
         modelpth = os.path.join(args.model_path, model_weights)
         if 'finetune' in modelpth:
             checkpoint = torch.load(modelpth)['model']
@@ -116,6 +117,7 @@ def main(args, model_weights=''):
         model.load_state_dict(checkpoint)
         model.cuda()
     else:
+        print('supervised')
         model = alexnet(pretrained=True)
         model.cuda()
 
