@@ -16,5 +16,5 @@ if len(wnids) > 200:
 
 for wnid in mv_wnids:
     source = os.path.join(base_path,wnid)
-    dest = os.path.join(base_path,'to_test')
+    dest = os.path.join(base_path,'to_test',wnid)
     shutil.copytree(source,dest)

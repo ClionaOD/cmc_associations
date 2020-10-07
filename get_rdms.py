@@ -52,21 +52,19 @@ def construct_rdm(activation_df):
     rdm = pd.DataFrame(rdm, columns=activation_df.columns, index=activation_df.columns)
     return rdm
 
-def get_rdms(args):
-    for a in os.listdir(args.activation_path):
-        with open(f'{args.activation_path}/{a}', 'rb') as f:
-            acts = pickle.load(f)
-        
-        activation_dfs = construct_activation_df(acts)
-        rdm_dict = {k:construct_rdm(v) for k,v in activation_dfs.items()}
-
-        if args.save_rdm:
-            _save = a.split('_')[0]
-            with open(f'{args.rdm_path}/{_save}_rdms.pickle','wb') as f:
-                pickle.dump(rdm_dict,f)
-
 def main(args):
-    get_rdms(args)
+    for a in os.listdir(args.activation_path):
+        if not os.path.isdir(f'{args.activation_path}/{a}'):
+            with open(f'{args.activation_path}/{a}', 'rb') as f:
+                acts = pickle.load(f)
+            
+            activation_dfs = construct_activation_df(acts)
+            rdm_dict = {k:construct_rdm(v) for k,v in activation_dfs.items()}
+
+            if args.save_rdm:
+                _save = a.split('_')[0]
+                with open(f'{args.rdm_path}/{_save}_rdms.pickle','wb') as f:
+                    pickle.dump(rdm_dict,f)
 
 if __name__ == "__main__":
     args = parse_option()
