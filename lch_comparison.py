@@ -66,22 +66,23 @@ def main(args):
     corr_results = {k.split('_')[0] : None for k in os.listdir(args.rdm_path)}
     
     for model_file in os.listdir(args.rdm_path):
-        with open(f'{args.rdm_path}/{model_file}', 'rb') as f:
-            rdms = pickle.load(f)
-        
-        model = model_file.split('_')[0]
+        if not os.path.isdir(f'{args.rdm_path}/{model_file}'):
+            with open(f'{args.rdm_path}/{model_file}', 'rb') as f:
+                rdms = pickle.load(f)
+            
+            model = model_file.split('_')[0]
 
-        results = pd.DataFrame(
-            index=list(rdms.keys()),
-            columns=[f'{args.correlation} correlation', 'pval']
-        )
+            results = pd.DataFrame(
+                index=list(rdms.keys()),
+                columns=[f'{args.correlation} correlation', 'pval']
+            )
 
-        for layer,rdm in rdms.items():
-            corr, pval, n = mantel(rdm.values, lch_df.values, method=args.correlation)
-            results.loc[layer,f'{args.correlation} correlation'] = corr
-            results.loc[layer,'pval'] = pval
+            for layer,rdm in rdms.items():
+                corr, pval, n = mantel(rdm.values, lch_df.values, method=args.correlation)
+                results.loc[layer,f'{args.correlation} correlation'] = corr
+                results.loc[layer,'pval'] = pval
 
-        corr_results[model] = results
+            corr_results[model] = results
 
     with open(args.save_path, 'wb') as f:
         pickle.dump(corr_results, f)
