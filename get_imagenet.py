@@ -46,12 +46,12 @@ else:
     with open(f'{list_path}','w') as f:
         json.dump(test_categs,f)
 
-manual = False
+manual = True
 if manual == True:
     wnids = os.listdir(category_path)
     wnids = [i for i in wnids if not 'json' in i and not 'to_test' in i]
     lens = {wnid: len(os.listdir(f'{category_path}/{wnid}')) for wnid in wnids}
-    lens = {k:v for k,v in lens.items() if v >= 120 and v < 130}
+    lens = {k:v for k,v in lens.items() if v >= 140 and v < 150}
     test_categs = list(lens.keys())
 
 if not manual:
