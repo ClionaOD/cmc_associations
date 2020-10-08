@@ -4,6 +4,7 @@ import pickle
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from statsmodels.stats.multitest import multipletests
 
 num_classes = 256
 
@@ -23,17 +24,18 @@ pval_df = pd.DataFrame(index=indexes, columns=cols)
 for model, result_df in results.items():
     for idx, layer in enumerate(indexes):
         pval_df.loc[layer, model] = result_df.loc[layer, 'pval']
-pval_df = pval_df / len(indexes) # multiple comparisons across layers
-#pval_df = pval_df / len(cols) # multiple comparisons across models
 
-sigs = pval_df.values
-for i in sigs: #iterates over rows
-    for j in i: #iterates along a row
-        if j < 0.05:
-            j = 1
-        else:
-            j = 0
-sig_df = pd.DataFrame(data=sigs, index=indexes, columns=cols)
+multiple_results = multipletests(
+    pval_df.values.ravel(),
+    alpha=0.01,
+    method='bonferroni'
+)
+
+sig_df = pd.DataFrame(
+    data= multiple_results[0].reshape(7,7),
+    index=indexes, 
+    columns=cols
+)
 
 fig, (ax1,leg) = plt.subplots(nrows=1,ncols=2,gridspec_kw={'width_ratios': [1,.3]}, figsize=(11.69/1.25,8.27/1.5))
 fig.subplots_adjust(wspace=0.5)
@@ -47,10 +49,10 @@ ax1.set_ylabel('correlation to lch matrix (spearman)')
 leg.legend(handles, labels)
 leg.axis('off') 
 
-sigs=list(zip(np.where(sig_df==1)[0], np.where(sig_df==1)[1]))
+sigs=list(zip(np.where(sig_df==True)[0], np.where(sig_df==True)[1]))
 for x in sigs:
-    anot = (x[1] , plot_df.iloc[x[0]][x[1]]+.001)
+    anot = (x[0], plot_df.iloc[x[0],x[1]]+.001)
     ax1.annotate('*', anot)
 
-plt.savefig('./results/lch_correlation_256_classes.pdf')
+#plt.savefig('./results/lch_correlation_256_classes_withSig.pdf')
 plt.show()
