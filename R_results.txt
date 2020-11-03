@@ -1,0 +1,30 @@
+#full Mantel, RDMs to LCH
+X vs. LCH,Pearson Mantel statistic r,Significance
+Random,0.1589,0.001
+Supervised,0.11167,0.001
+Lab,0.1195,0.001
+Movie Lab,0.1403,0.001
+1 sec,0.03937,0.115
+10 sec,0.2121,0.001
+60 sec,0.2668,0.001
+5 min,0.2302,0.001
+#partial Mantel, RDMs to LCH control Random
+X vs. LCH Controlling for Random,Pearson Mantel statistic r,Significance
+Random,1.89E-09,0.493
+Supervised,0.02595,0.206
+Lab,-0.02184,0.74
+Movie Lab,0.0001595,0.484
+1 sec,-0.04642,0.931
+10 sec,0.1654,0.001
+60 sec,0.2195,0.001
+5 min,0.1772,0.001
+#partial Mantel, RDMs to LCH control Lab
+X vs. LCH Controlling for Lab,Pearson Mantel statistic r,Significance
+Random,0.1077,0.003
+Supervised,0.07443,0.008
+Lab,NaN,NaN
+Movie Lab,0.07421,0.007
+1 sec,-0.02769,0.829
+10 sec,0.1913,0.001
+60 sec,0.242,0.001
+5min,0.1996,0.001
