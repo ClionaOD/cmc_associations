@@ -2,12 +2,6 @@
 # image URLs by synset ID at http://www.image-net.org/api/text/imagenet.synset.geturls?wnid=[wnid]
 # map image names to image urls using http://www.image-net.org/api/text/imagenet.synset.geturls.getmapping?wnid=[wnid]
 
-#TODO: get list of imagenet synsets, random sample 500 synsets
-    #save this list to re-use for replicability (if check)
-
-#TODO: get 150 images per class
-    # check if already saved on server, if then don't redownload else get and save
-
 import requests
 import json
 import random
