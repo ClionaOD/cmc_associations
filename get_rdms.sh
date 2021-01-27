@@ -6,3 +6,4 @@ python3 /home/clionaodoherty/cmc_associations/get_rdms.py \
     --activation_path /home/clionaodoherty/cmc_associations/activations/blurring/sigma_10 \
     --rdm_path /home/clionaodoherty/cmc_associations/rdms/blurring/sigma_10 \
     --save_rdm True
+

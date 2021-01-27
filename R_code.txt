@@ -1,0 +1,15 @@
+To install vegan package once only:
+> install.packages(‘vegan’)
+
+Partial Mantel Code:
+RDM csv files should be uploaded to AWS s3 for ease loading.
+> library(‘vegan’)
+> random <- read.csv("https://cusacklab-web.s3.amazonaws.com/cmc_associations/random_rdm_conv5.csv")
+> f10s <- read.csv("https://cusacklab-web.s3.amazonaws.com/cmc_associations/finetune10s_rdm_conv5.csv")
+> lch <- read.table("https://cusacklab-web.s3.amazonaws.com/cmc_associations/lch_df.txt")
+
+Full Mantel test. Note the lch file loaded above doesn't include the headers so omit the indexing. This depends on data loaded.
+> mantel(f10s[2:257],lch)
+
+Partial Mantel, controlling for Random.
+> mantel.partial(f10s[2:257],lch,random[2:257])
