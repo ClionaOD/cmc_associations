@@ -1,27 +1,41 @@
 import argparse
 import pickle
 import numpy as np
+import matplotlib.pyplot as plt
 import os
+import sys
+import unittest
+from numpy.lib.arraysetops import in1d
+from tensorflow.python.keras import activations
 
 import torch
 import torch.nn as nn
+from torch.nn.modules import activation
 import torch.utils.data
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
-from torchvision.models import alexnet
+from torchvision.models import AlexNet
 
 from dataset import RGB2Lab
 from models.alexnet import TemporalAlexNetCMC
+from PIL import Image
 
 def parse_option(): 
 
     parser = argparse.ArgumentParser('argument for activations')
 
+    #default='/home/clionaodoherty/cmc_associations/weights',
+    #default='/home/clionaodoherty/cmc_associations/activations/blurring',
+    #default='/data/imagenet_cmc/to_test',
+    #default='distort',
     parser.add_argument('--model_path', type=str, help='model to get activations of')
-    parser.add_argument('--save_path', type=str, help='path to save activations')
+    parser.add_argument('--save_path', type=str,help='path to save activations')
     parser.add_argument('--image_path', type=str, help='path to images for activation analysis')
     parser.add_argument('--transform', type=str, choices=['Lab','distort'], help='color transform to use')
     parser.add_argument('--supervised', type=bool, default=False, help='whether to test against supervised AlexNet')
+    parser.add_argument('--remove_bg', type=bool, default=False, help='if True, this will segment the image and set the background to white')
+    parser.add_argument('--blur', type=float, default=None, help='if not None, this will blur the image using a Gaussian kernel with sigma defined.')
+
 
     opt = parser.parse_args()
 
@@ -50,10 +64,19 @@ class ImageFolderWithPaths(datasets.ImageFolder):
         tuple_with_path = (original_tuple + (path,))
         return tuple_with_path
 
-def compute_features(dataloader, model, N):
+def remove_background(img_path):
+    from pixellib.tune_bg import alter_bg
+    change_bg = alter_bg(model_type = "pb")
+    change_bg.load_pascalvoc_model("./xception_pascalvoc.pb")
+    output = change_bg.color_bg(img_path, 
+        colors = (255,255,255),
+        img_is_tensor=True)
+    return output
+
+def compute_features(dataloader, model, categories, layers):
     print('Compute features')
     model.eval()
-    act = {}
+    
     def _store_feats(layer, inp, output):
         """An ugly but effective way of accessing intermediate model features
         """
@@ -61,34 +84,83 @@ def compute_features(dataloader, model, N):
     for m in model.modules():               #model.encoder.modules() for my own alexnet/model
         if isinstance(m, nn.ReLU):
             m.register_forward_hook(_store_feats)
-    #for m in model.classifier.modules():
-    #    if isinstance(m, nn.ReLU):
-    #        m.register_forward_hook(_store_feats)
-    for i, input_tensor in enumerate(dataloader):
+    
+    activations = {categ:{l:[] for l in layers} for categ in categories}
+    #categ is the n0XXX imagenet class - n_categs = 256 (len activations = 256)
+    #l is the layer ('conv1' etc.) - running avg of acts, sum with each then divide by 150 (150 imgs per class)
+
+    
+    print('... working on activations ...')
+    for i, input_tensor in enumerate(dataloader):  
         with torch.no_grad():
-            input_var, label = input_tensor[0].cuda(),input_tensor[2]
+            input_var, label = input_tensor[0].cuda(),input_tensor[2][0]
+            
+            categ = label.split('/')[-2]
+            
+            if args.remove_bg:
+                input_var = remove_background(input_var)
+                print(input_var.shape)
+            
+            if args.blur is not None:
+                im1 = input_var[0]
+                #imsave(im1.cpu(),'imsave_pre.jpg') 
+
+                gauss = transforms.GaussianBlur(kernel_size=(15,15), sigma=(args.blur,args.blur))
+                input_var = gauss(input_var)
+
+                im = input_var[0]  
+                #imsave(im.cpu(),'imsave_blur.jpg')           
+            
             input_var = input_var.float()
             _model_feats = []
-            aux = model(input_var).data.cpu().numpy()
-            act[label[0]] = _model_feats
-    return act
+            model(input_var)
+            
+            if i == 0:
+                zero_arrs = [np.zeros(arr.shape) for arr in _model_feats]
+                activations = {categ:{l:zero_arrs[idx] for idx, l in enumerate(layers)} for categ in categories}
+
+            for idx, acts in enumerate(_model_feats): 
+                activations[categ][layers[idx]] += acts
+    
+    print('... getting mean ...')
+    for categ in categories:
+        for layer in layers:
+            activations[categ][layer] = activations[categ][layer] / 150 #150 is because there are 256 * 150 images in the test set, need to make an argument
+
+    return activations
+
+def imsave(inp, title=None):
+    inp = inp.numpy().transpose((1, 2, 0))
+    #vals returned from get_mean_std.py
+    mean = [0.4493, 0.4348, 0.3970]
+    std = [0.3030, 0.3001, 0.3016]
+    
+    mean = np.array(mean)
+    std = np.array(std)
+    inp = std * inp + mean
+    inp = np.clip(inp, 0, 1)
+    plt.imsave(title, inp)
 
 def get_activations(imgPath, model, args):
     
     #transform the input images
-    mean = [(0 + 100) / 2, (-86.183 + 98.233) / 2, (-107.857 + 94.478) / 2]
-    std = [(100 - 0) / 2, (86.183 + 98.233) / 2, (107.857 + 94.478) / 2]
+    #vals returned from get_mean_std.py
+    mean = [0.4493, 0.4348, 0.3970]
+    std = [0.3030, 0.3001, 0.3016]
+    
     if args.transform == 'Lab':
         color_transfer = RGB2Lab()
     else:
         color_transfer = get_color_distortion()
+    
     normalize = transforms.Normalize(mean=mean, std=std)
+
     train_transform = transforms.Compose([
-        transforms.RandomResizedCrop(224, scale=(0.2, 1.)),
-        transforms.RandomHorizontalFlip(),
+        transforms.Resize(224),
+        transforms.CenterCrop(224),
         color_transfer,
         transforms.ToTensor(),
-        normalize,
+        normalize
     ])
     
     #load the data
@@ -99,10 +171,17 @@ def get_activations(imgPath, model, args):
                                             pin_memory=True,
                                             shuffle = False)
     
-    #compute the features
-    features = compute_features(dataloader, model, len(dataset))
+    categories = []
+    for d in os.listdir(args.image_path):
+        if os.path.isdir(f'{args.image_path}/{d}'):
+            categories.append(d)
+
+    layers = ['conv1', 'conv2', 'conv3', 'conv4', 'conv5', 'fc6', 'fc7']
     
-    return features
+    #compute the features
+    mean_activations = compute_features(dataloader, model, categories=categories, layers=layers)
+    
+    return mean_activations
 
 def main(args, model_weights=''):
     if not args.supervised:
@@ -118,44 +197,24 @@ def main(args, model_weights=''):
         model.cuda()
     else:
         print('supervised')
-        model = alexnet(pretrained=True)
+        model = AlexNet(pretrained=True)
         model.cuda()
 
     image_path = args.image_path 
-    act = get_activations(image_path, model, args)
-    print('activations computed')
+    
+    activations = get_activations(image_path, model, args)
 
-    categories = []
-    for d in os.listdir(image_path):
-        if os.path.isdir(f'{image_path}/{d}'):
-            categories.append(d)
-
-    layers = ['conv1', 'conv2', 'conv3', 'conv4', 'conv5', 'fc6', 'fc7']
-    activations = {k:{l:[] for l in layers} for k in categories}
-
-    act_list = list(act.items()) #this is list of tuples len 50*34, x[0] is the path x[1] is the list of acts one per layer
-
-    for path, activation_list in act_list:
-        for label in categories:
-            if label in path:
-                for idx, l in enumerate(layers):
-                    activations[label][l].append(activation_list[idx])
-
-    print('calculating mean activations')
-    for label in categories:
-        for l in layers:
-            mean = activations[label][l][0]
-            for i in activations[label][l][1:]:
-                mean = np.concatenate((mean,i), axis=0)
-            mean = np.mean(mean, axis=0)
-            activations[label][l] = mean
     print('done ... saving')
 
     if not args.supervised:
         _file = m.split('_')[0]
         _save = f'{args.save_path}/{_file}_activations.pickle'
+        if args.blur is not None:
+            _save = f'{args.save_path}/{_file}_blur_{args.blur}_activations.pickle'
     else:
         _save = f'{args.save_path}/supervised_activations.pickle'
+        if args.blur is not None:
+            _save = f'{args.save_path}/supervised_blur_{args.blur}_activations.pickle'
     
     with open(_save, 'wb') as handle:
         pickle.dump(activations, handle)
