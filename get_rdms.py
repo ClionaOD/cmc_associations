@@ -11,10 +11,10 @@ import scipy.spatial.distance as ssd
 def parse_option():
     parser = argparse.ArgumentParser('argument for activations')
 
-    parser.add_argument('--image_path', type=str, help='path to images tested, for getting list of classes')
-    parser.add_argument('--activation_path', type=str, help='path to directory of activations')
-    parser.add_argument('--rdm_path', type=str, help='where to save rdms if save_rdm is True')
-    parser.add_argument('--save_rdm', type=bool, default=False, help='whether to save the rdm dict')
+    parser.add_argument('--image_path', default='/data/imagenet_cmc/to_test', type=str, help='path to images tested, for getting list of classes')
+    parser.add_argument('--activation_path', default='/home/clionaodoherty/cmc_associations/activations/blurring/sigma_10', type=str, help='path to directory of activations')
+    parser.add_argument('--rdm_path', default='/home/clionaodoherty/cmc_associations/rdms/blurring/sigma_10', type=str, help='where to save rdms if save_rdm is True')
+    parser.add_argument('--save_rdm', type=bool, default=True, help='whether to save the rdm dict')
 
     opt = parser.parse_args()
 
@@ -32,12 +32,12 @@ def construct_activation_df(activations):
     for k, v in activations.items():
         #k is the class, v is the dict with layers and activations
         for idx, l in enumerate(layers):
-            _activationArray = v[l]
-            if not idx > 4:
-                s = pd.Series(np.mean(_activationArray, axis=(1,2)))
+            _activationArray = v[l] #use indexing because blurred images saved first batch size index
+            if idx <= 4:
+                s = pd.Series(np.mean(_activationArray[0,:,:,:], axis=(1,2)))
                 activation_df[l][k] = s
             else:
-                s = pd.Series(_activationArray)
+                s = pd.Series(_activationArray[0,:])
                 activation_df[l][k] = s
     
     return activation_df
