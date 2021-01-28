@@ -1,7 +1,7 @@
 library(‘vegan’)
 
 lch <- read.table("./results/lch_df.txt")
-random <- read.csv('./rdms/blurring/conv5/random_rdm_blur10_conv5.csv')
+random <- read.csv('./rdms/blurring/sigma_10/conv5/random_conv5.csv')
 
 files <- list.files(path="./rdms/blurring/conv5", pattern="*.csv", full.names=TRUE, recursive=FALSE)
 
