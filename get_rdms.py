@@ -12,8 +12,8 @@ def parse_option():
     parser = argparse.ArgumentParser('argument for activations')
 
     parser.add_argument('--image_path', default='/data/imagenet_cmc/to_test', type=str, help='path to images tested, for getting list of classes')
-    parser.add_argument('--activation_path', default='/home/clionaodoherty/cmc_associations/activations/blurring/sigma_10', type=str, help='path to directory of activations')
-    parser.add_argument('--rdm_path', default='/home/clionaodoherty/cmc_associations/rdms/blurring/sigma_10', type=str, help='where to save rdms if save_rdm is True')
+    parser.add_argument('--activation_path', default='/home/clionaodoherty/cmc_associations/activations/main_redo', type=str, help='path to directory of activations')
+    parser.add_argument('--rdm_path', default='/home/clionaodoherty/cmc_associations/rdms/main_redo', type=str, help='where to save rdms if save_rdm is True')
     parser.add_argument('--save_rdm', type=bool, default=True, help='whether to save the rdm dict')
 
     opt = parser.parse_args()
@@ -68,11 +68,8 @@ def main(args):
                 
                 if not os.path.isdir(f'{args.rdm_path}/conv5/'):
                     os.makedirs(f'{args.rdm_path}/conv5/')
-                with open(f'{args.rdm_path}/conv5/{_save}_conv5.pickle','wb') as f:
-                    pickle.dump(rdm_dict['conv5'],f)
+                rdm_dict['conv5'].to_csv(f'{args.rdm_path}/conv5/{_save}_conv5.csv')
 
 if __name__ == "__main__":
     args = parse_option()
     main(args)
-
-    

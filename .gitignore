@@ -72,3 +72,10 @@ weights/finetune60sec_alexnet.pth
 weights/movieLab_alexnet.pth
 weights/random_alexnet.pth
 .vscode/settings.json
+activations/main_redo/authorLab_activations.pickle
+activations/main_redo/finetune1sec_activations.pickle
+activations/main_redo/movieLab_activations.pickle
+activations/main_redo/finetune10sec_activations.pickle
+activations/main_redo/finetune60sec_activations.pickle
+activations/main_redo/finetune5min_activations.pickle
+activations/main_redo/random_activations.pickle

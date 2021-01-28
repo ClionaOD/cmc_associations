@@ -124,7 +124,7 @@ def compute_features(dataloader, model, categories, layers):
     print('... getting mean ...')
     for categ in categories:
         for layer in layers:
-            activations[categ][layer] = (activations[categ][layer] / 150)[0,:,:,:] 
+            activations[categ][layer] = (activations[categ][layer] / 150)
             #150 is because there are 256 * 150 images in the test set, need to make an argument
             #remove first dimension for batch size
 
