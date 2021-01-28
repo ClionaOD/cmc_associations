@@ -47,7 +47,7 @@ def construct_rdm(activation_df):
     Takes a df with columns=classes, series=mean activations and returns the data as an n*n rdm dataframe
     activation_df: a df with columns=classes)
     """
-    rdm = ssd.pdist(activation_df.values.T)
+    rdm = ssd.pdist(activation_df.values.T, metric='cosine')
     rdm = ssd.squareform(rdm)
     rdm = pd.DataFrame(rdm, columns=activation_df.columns, index=activation_df.columns)
     return rdm
@@ -65,6 +65,11 @@ def main(args):
                 _save = a.split('_')[0]
                 with open(f'{args.rdm_path}/{_save}_rdms.pickle','wb') as f:
                     pickle.dump(rdm_dict,f)
+                
+                if not os.path.isdir(f'{args.rdm_path}/conv5/'):
+                    os.makedirs(f'{args.rdm_path}/conv5/')
+                with open(f'{args.rdm_path}/conv5/{_save}_conv5.pickle','wb') as f:
+                    pickle.dump(rdm_dict['conv5'],f)
 
 if __name__ == "__main__":
     args = parse_option()
