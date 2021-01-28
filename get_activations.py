@@ -89,13 +89,12 @@ def compute_features(dataloader, model, categories, layers):
     #categ is the n0XXX imagenet class - n_categs = 256 (len activations = 256)
     #l is the layer ('conv1' etc.) - running avg of acts, sum with each then divide by 150 (150 imgs per class)
 
-    
     print('... working on activations ...')
     for i, input_tensor in enumerate(dataloader):  
         with torch.no_grad():
             input_var, label = input_tensor[0].cuda(),input_tensor[2][0]
             
-            categ = label.split('/')[-2]
+            category = label.split('/')[-2]
             
             if args.remove_bg:
                 input_var = remove_background(input_var)
@@ -120,12 +119,14 @@ def compute_features(dataloader, model, categories, layers):
                 activations = {categ:{l:zero_arrs[idx] for idx, l in enumerate(layers)} for categ in categories}
 
             for idx, acts in enumerate(_model_feats): 
-                activations[categ][layers[idx]] += acts
+                activations[category][layers[idx]] = activations[category][layers[idx]] + acts
     
     print('... getting mean ...')
     for categ in categories:
         for layer in layers:
-            activations[categ][layer] = activations[categ][layer] / 150 #150 is because there are 256 * 150 images in the test set, need to make an argument
+            activations[categ][layer] = (activations[categ][layer] / 150)[0,:,:,:] 
+            #150 is because there are 256 * 150 images in the test set, need to make an argument
+            #remove first dimension for batch size
 
     return activations
 
