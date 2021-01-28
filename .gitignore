@@ -71,3 +71,4 @@ weights/finetune10sec_alexnet.pth
 weights/finetune60sec_alexnet.pth
 weights/movieLab_alexnet.pth
 weights/random_alexnet.pth
+.vscode/settings.json
