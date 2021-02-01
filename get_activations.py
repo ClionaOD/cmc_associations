@@ -14,11 +14,12 @@ from torch.nn.modules import activation
 import torch.utils.data
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
-from torchvision.models import AlexNet
+from torchvision.models import alexnet
 
 from dataset import RGB2Lab
 from models.alexnet import TemporalAlexNetCMC
 from PIL import Image
+from segmentation import segment_vals
 
 def parse_option(): 
 
@@ -31,9 +32,9 @@ def parse_option():
     parser.add_argument('--model_path', type=str, help='model to get activations of')
     parser.add_argument('--save_path', type=str,help='path to save activations')
     parser.add_argument('--image_path', type=str, help='path to images for activation analysis')
-    parser.add_argument('--transform', type=str, choices=['Lab','distort'], help='color transform to use')
+    parser.add_argument('--transform', type=str, default='distort', choices=['Lab','distort'], help='color transform to use')
     parser.add_argument('--supervised', type=bool, default=False, help='whether to test against supervised AlexNet')
-    parser.add_argument('--remove_bg', type=bool, default=False, help='if True, this will segment the image and set the background to white')
+    parser.add_argument('--segment', type=str, default=None, choices=['rm_bg','rm_obj'], help='whether to segment the objects from bg and which to remove')
     parser.add_argument('--blur', type=float, default=None, help='if not None, this will blur the image using a Gaussian kernel with sigma defined.')
 
 
@@ -64,15 +65,6 @@ class ImageFolderWithPaths(datasets.ImageFolder):
         tuple_with_path = (original_tuple + (path,))
         return tuple_with_path
 
-def remove_background(img_path):
-    from pixellib.tune_bg import alter_bg
-    change_bg = alter_bg(model_type = "pb")
-    change_bg.load_pascalvoc_model("./xception_pascalvoc.pb")
-    output = change_bg.color_bg(img_path, 
-        colors = (255,255,255),
-        img_is_tensor=True)
-    return output
-
 def compute_features(dataloader, model, categories, layers):
     print('Compute features')
     model.eval()
@@ -96,10 +88,28 @@ def compute_features(dataloader, model, categories, layers):
             
             category = label.split('/')[-2]
             
-            if args.remove_bg:
-                input_var = remove_background(input_var)
-                print(input_var.shape)
-            
+            if args.segment == 'rm_bg':
+                input_var = segment_vals(
+                    input_var, 
+                    inp_mean = [(0 + 100) / 2, (-86.183 + 98.233) / 2, (-107.857 + 94.478) / 2],
+                    inp_std = [(100 - 0) / 2, (86.183 + 98.233) / 2, (107.857 + 94.478) / 2],
+                    #inp_mean=[0.4493, 0.4348, 0.3970], 
+                    #inp_std=[0.3030, 0.3001, 0.3016], 
+                    remove='background')
+                input_var = input_var.unsqueeze(0)
+                input_var.cuda()
+            elif args.segment == 'rm_obj':
+                input_var = segment_vals(
+                    input_var, 
+                    inp_mean = [(0 + 100) / 2, (-86.183 + 98.233) / 2, (-107.857 + 94.478) / 2],
+                    inp_std = [(100 - 0) / 2, (86.183 + 98.233) / 2, (107.857 + 94.478) / 2],
+                    #inp_mean=[0.4493, 0.4348, 0.3970], 
+                    #inp_std=[0.3030, 0.3001, 0.3016],  
+                    remove='objects')
+                input_var = input_var.unsqueeze(0)
+                input_var.cuda()
+            #imsave(input_var[0,:,:,:],title='test.png')
+                
             if args.blur is not None:
                 im1 = input_var[0]
                 #imsave(im1.cpu(),'imsave_pre.jpg') 
@@ -110,7 +120,7 @@ def compute_features(dataloader, model, categories, layers):
                 im = input_var[0]  
                 #imsave(im.cpu(),'imsave_blur.jpg')           
             
-            input_var = input_var.float()
+            input_var = input_var.float().cuda()
             _model_feats = []
             model(input_var)
             
@@ -146,8 +156,12 @@ def get_activations(imgPath, model, args):
     
     #transform the input images
     #vals returned from get_mean_std.py
-    mean = [0.4493, 0.4348, 0.3970]
-    std = [0.3030, 0.3001, 0.3016]
+    #mean = [0.4493, 0.4348, 0.3970]
+    #std = [0.3030, 0.3001, 0.3016]
+
+    #original CMC mean/std for comparison
+    mean = [(0 + 100) / 2, (-86.183 + 98.233) / 2, (-107.857 + 94.478) / 2]
+    std = [(100 - 0) / 2, (86.183 + 98.233) / 2, (107.857 + 94.478) / 2]
     
     if args.transform == 'Lab':
         color_transfer = RGB2Lab()
@@ -166,6 +180,7 @@ def get_activations(imgPath, model, args):
     
     #load the data
     dataset = ImageFolderWithPaths(imgPath, transform=train_transform)
+    
     dataloader = torch.utils.data.DataLoader(dataset,
                                             batch_size=1,
                                             num_workers=0,
@@ -185,6 +200,8 @@ def get_activations(imgPath, model, args):
     return mean_activations
 
 def main(args, model_weights=''):
+    modelpth = os.path.join(args.model_path, model_weights)
+    
     if not args.supervised:
         print('not supervised')
         modelpth = os.path.join(args.model_path, model_weights)
@@ -198,7 +215,7 @@ def main(args, model_weights=''):
         model.cuda()
     else:
         print('supervised')
-        model = AlexNet(pretrained=True)
+        model = alexnet(pretrained=True)
         model.cuda()
 
     image_path = args.image_path 
@@ -223,6 +240,14 @@ def main(args, model_weights=''):
 if __name__ == '__main__':
     args = parse_option()
     print('args parsed')
+
+    """args.model_path = '/home/clionaodoherty/cmc_associations/weights' 
+    args.save_path = '/home/clionaodoherty/cmc_associations/activations/segmentation/objects_only' 
+    args.image_path = '/data/imagenet_cmc/to_test' 
+    args.transform = 'distort'
+    args.segment = 'rm_bg'
+    args.supervised = True """
+    
     if not args.supervised:
         for m in os.listdir(args.model_path):
             main(args,m)
