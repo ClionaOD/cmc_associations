@@ -6,7 +6,6 @@ import os
 import sys
 import unittest
 from numpy.lib.arraysetops import in1d
-from tensorflow.python.keras import activations
 
 import torch
 import torch.nn as nn
@@ -245,8 +244,8 @@ if __name__ == '__main__':
     args.save_path = '/home/clionaodoherty/cmc_associations/activations/segmentation/objects_only' 
     args.image_path = '/data/imagenet_cmc/to_test' 
     args.transform = 'distort'
-    args.segment = 'rm_bg'
-    args.supervised = True """
+    args.blur = 10.0
+    args.supervised = True"""
     
     if not args.supervised:
         for m in os.listdir(args.model_path):
