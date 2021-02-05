@@ -4,10 +4,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import sys
+import math
 import unittest
 from numpy.lib.arraysetops import in1d
 
 import torch
+import torch.fft #for fourier
 import torch.nn as nn
 from torch.nn.modules import activation
 import torch.utils.data
@@ -18,7 +20,7 @@ from torchvision.models import alexnet
 from dataset import RGB2Lab
 from models.alexnet import TemporalAlexNetCMC
 from PIL import Image
-from segmentation import segment_vals
+from segmentation import segment_vals, segment_with_fourier
 
 def parse_option(): 
 
@@ -88,7 +90,7 @@ def compute_features(dataloader, model, categories, layers):
             category = label.split('/')[-2]
             
             if args.segment == 'rm_bg':
-                input_var = segment_vals(
+                input_var = segment_with_fourier(
                     input_var, 
                     inp_mean = [(0 + 100) / 2, (-86.183 + 98.233) / 2, (-107.857 + 94.478) / 2],
                     inp_std = [(100 - 0) / 2, (86.183 + 98.233) / 2, (107.857 + 94.478) / 2],
@@ -107,8 +109,9 @@ def compute_features(dataloader, model, categories, layers):
                     remove='objects')
                 input_var = input_var.unsqueeze(0)
                 input_var.cuda()
-            #imsave(input_var[0,:,:,:],title='test.png')
-                
+            
+            imsave(input_var[0,:,:,:],title='test_seg_four.png')
+            """  
             if args.blur is not None:
                 im1 = input_var[0]
                 #imsave(im1.cpu(),'imsave_pre.jpg') 
@@ -128,7 +131,7 @@ def compute_features(dataloader, model, categories, layers):
                 activations = {categ:{l:zero_arrs[idx] for idx, l in enumerate(layers)} for categ in categories}
 
             for idx, acts in enumerate(_model_feats): 
-                activations[category][layers[idx]] = activations[category][layers[idx]] + acts
+                activations[category][layers[idx]] = activations[category][layers[idx]] + acts"""
     
     print('... getting mean ...')
     for categ in categories:
@@ -141,9 +144,12 @@ def compute_features(dataloader, model, categories, layers):
 
 def imsave(inp, title=None):
     inp = inp.numpy().transpose((1, 2, 0))
+    #original CMC mean/std for comparison
+    mean = [(0 + 100) / 2, (-86.183 + 98.233) / 2, (-107.857 + 94.478) / 2]
+    std = [(100 - 0) / 2, (86.183 + 98.233) / 2, (107.857 + 94.478) / 2]
     #vals returned from get_mean_std.py
-    mean = [0.4493, 0.4348, 0.3970]
-    std = [0.3030, 0.3001, 0.3016]
+    #mean = [0.4493, 0.4348, 0.3970]
+    #std = [0.3030, 0.3001, 0.3016]
     
     mean = np.array(mean)
     std = np.array(std)
@@ -240,12 +246,13 @@ if __name__ == '__main__':
     args = parse_option()
     print('args parsed')
 
-    """args.model_path = '/home/clionaodoherty/cmc_associations/weights' 
+    args.model_path = '/home/clionaodoherty/cmc_associations/weights' 
     args.save_path = '/home/clionaodoherty/cmc_associations/activations/segmentation/objects_only' 
     args.image_path = '/data/imagenet_cmc/to_test' 
     args.transform = 'distort'
     args.blur = 10.0
-    args.supervised = True"""
+    args.segment = 'rm_bg'
+    #args.supervised = True
     
     if not args.supervised:
         for m in os.listdir(args.model_path):

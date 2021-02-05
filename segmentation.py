@@ -2,8 +2,10 @@ from torchvision import models
 from PIL import Image
 import matplotlib.pyplot as plt
 import torch
+import torch.fft
 import torchvision.transforms as T
 import numpy as np
+import math
 
 dlab = models.segmentation.deeplabv3_resnet101(pretrained=1).eval()
 
@@ -81,10 +83,10 @@ def segment(net, path):
   
   # Resize and CenterCrop for better inference results
   trf = T.Compose([T.Resize(256), 
-                   T.CenterCrop(224), 
-                   T.ToTensor(), 
-                   T.Normalize(mean = mean, 
-                               std = std)])
+                    T.CenterCrop(224), 
+                    T.ToTensor(), 
+                    T.Normalize(mean = mean, 
+                                std = std)])
   
   inp = trf(img).unsqueeze(0)
   
@@ -97,12 +99,68 @@ def segment(net, path):
   
   out = net(inp)['out']
   om = torch.argmax(out.squeeze(), dim=0).detach().cpu().numpy()
-  
+
   obj = segment_objects(om, transf_img)
   plt.imshow(obj); plt.axis('off'); plt.savefig('segmented_obj.png')
 
   bg = segment_background(om, transf_img)
   plt.imshow(bg); plt.axis('off'); plt.savefig('segmented_bg.png')
+
+def phase_scramble(inp_tensor):
+  inp_fft = torch.fft.rfft(inp_tensor)
+  
+  inp_scramb = torch.zeros_like(inp_fft)
+  for idx, x in np.ndenumerate(inp_fft):
+      new_phase = np.random.uniform(-math.pi, math.pi)
+      inp_scramb[idx] = x.real + 1j*new_phase
+  
+  inp_scramb = torch.fft.irfft(inp_scramb)
+  return inp_scramb
+
+def segment_with_fourier(inp, inp_mean, inp_std, net=dlab, remove='background'):
+  # restructure the tensor for de-normalization and reconstruct 
+  img_unorm = NormalizeInverse(mean=inp_mean, std=inp_std)(inp)
+
+  # Use ImageNet mean and std for segmentation
+  mean = [0.485, 0.456, 0.406]
+  std = [0.229, 0.224, 0.225]
+  
+  trf = T.Compose([T.Normalize(mean = mean, 
+                               std = std)])
+  
+  img_seg_norm = trf(img_unorm).cpu()
+  
+  # Get segmentation map using Google DeepLab
+  out = net(img_seg_norm)['out']
+  segmap = torch.argmax(out.squeeze(), dim=0).detach().cpu().numpy()
+
+  # Phase scramble input image tensor for replacement
+  img_scrambled = phase_scramble(img_seg_norm)
+
+  # Convert both images (img and scrambled) to RGB for segmentation mapping
+  rgb_img = img_seg_norm[0,:,:,:].numpy().transpose(1,2,0)
+  rgb_scramb = img_scrambled[0,:,:,:].numpy().transpose(1,2,0)
+  
+  if remove == 'background':
+    r = np.where(segmap == 0, rgb_img[:,:,0], rgb_scramb[:,:,0])
+    g = np.where(segmap == 0, rgb_img[:,:,1], rgb_scramb[:,:,1])
+    b = np.where(segmap == 0, rgb_img[:,:,2], rgb_scramb[:,:,2])
+    rgb = np.stack([r, g, b], axis=2)
+  elif remove == 'objects':
+    r = np.where(segmap != 0, rgb_img[:,:,0], rgb_scramb[:,:,0])
+    g = np.where(segmap != 0, rgb_img[:,:,1], rgb_scramb[:,:,1])
+    b = np.where(segmap != 0, rgb_img[:,:,2], rgb_scramb[:,:,2])
+    rgb = np.stack([r, g, b], axis=2)
+  else:
+    raise ValueError('please select either background or objects to remove')
+  
+  rgb = rgb.transpose(2,0,1)
+  rgb = torch.from_numpy(rgb)
+  
+  rgb_unorm = NormalizeInverse(mean=mean, std=std)(rgb)
+  rgb_inp_norm = T.Normalize(mean=inp_mean, std=inp_std)(rgb_unorm)
+  
+  return rgb_inp_norm
 
 def segment_vals(inp, inp_mean, inp_std, net=dlab, remove='background'):
   """ 
@@ -154,3 +212,4 @@ def segment_vals(inp, inp_mean, inp_std, net=dlab, remove='background'):
 
 if __name__ == '__main__':
   segment(dlab, '/home/clionaodoherty/cmc_associations/test_imagenet/n10249950/img_4bf5b8c3f7c92e16a2fa26f98beda820.jpg')
+
