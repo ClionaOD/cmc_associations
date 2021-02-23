@@ -1,0 +1,184 @@
+,index,labels,type
+0,0,unlabeled,unlabeled
+1,1,person,thing
+2,2,bicycle,thing
+3,3,car,thing
+4,4,motorcycle,thing
+5,5,airplane,thing
+6,6,bus,thing
+7,7,train,thing
+8,8,truck,thing
+9,9,boat,thing
+10,10,traffic light,thing
+11,11,fire hydrant,thing
+12,12,street sign,stuff
+13,13,stop sign,thing
+14,14,parking meter,thing
+15,15,bench,thing
+16,16,bird,thing
+17,17,cat,thing
+18,18,dog,thing
+19,19,horse,thing
+20,20,sheep,thing
+21,21,cow,thing
+22,22,elephant,thing
+23,23,bear,thing
+24,24,zebra,thing
+25,25,giraffe,thing
+26,26,hat,stuff
+27,27,backpack,thing
+28,28,umbrella,thing
+29,29,shoe,stuff
+30,30,eye glasses,stuff
+31,31,handbag,thing
+32,32,tie,thing
+33,33,suitcase,thing
+34,34,frisbee,thing
+35,35,skis,thing
+36,36,snowboard,thing
+37,37,sports ball,thing
+38,38,kite,thing
+39,39,baseball bat,thing
+40,40,baseball glove,thing
+41,41,skateboard,thing
+42,42,surfboard,thing
+43,43,tennis racket,thing
+44,44,bottle,thing
+45,45,plate,stuff
+46,46,wine glass,thing
+47,47,cup,thing
+48,48,fork,thing
+49,49,knife,thing
+50,50,spoon,thing
+51,51,bowl,thing
+52,52,banana,thing
+53,53,apple,thing
+54,54,sandwich,thing
+55,55,orange,thing
+56,56,broccoli,thing
+57,57,carrot,thing
+58,58,hot dog,thing
+59,59,pizza,thing
+60,60,donut,thing
+61,61,cake,thing
+62,62,chair,thing
+63,63,couch,thing
+64,64,potted plant,thing
+65,65,bed,thing
+66,66,mirror,stuff
+67,67,dining table,thing
+68,68,window,stuff
+69,69,desk,stuff
+70,70,toilet,thing
+71,71,door,stuff
+72,72,tv,thing
+73,73,laptop,thing
+74,74,mouse,thing
+75,75,remote,thing
+76,76,keyboard,thing
+77,77,cell phone,thing
+78,78,microwave,thing
+79,79,oven,thing
+80,80,toaster,thing
+81,81,sink,thing
+82,82,refrigerator,thing
+83,83,blender,stuff
+84,84,book,thing
+85,85,clock,thing
+86,86,vase,thing
+87,87,scissors,thing
+88,88,teddy bear,thing
+89,89,hair drier,thing
+90,90,toothbrush,thing
+91,91,hair brush,stuff
+92,92,banner,stuff
+93,93,blanket,stuff
+94,94,branch,stuff
+95,95,bridge,stuff
+96,96,building-other,stuff
+97,97,bush,stuff
+98,98,cabinet,stuff
+99,99,cage,stuff
+100,100,cardboard,stuff
+101,101,carpet,stuff
+102,102,ceiling-other,stuff
+103,103,ceiling-tile,stuff
+104,104,cloth,stuff
+105,105,clothes,stuff
+106,106,clouds,stuff
+107,107,counter,stuff
+108,108,cupboard,stuff
+109,109,curtain,stuff
+110,110,desk-stuff,stuff
+111,111,dirt,stuff
+112,112,door-stuff,stuff
+113,113,fence,stuff
+114,114,floor-marble,stuff
+115,115,floor-other,stuff
+116,116,floor-stone,stuff
+117,117,floor-tile,stuff
+118,118,floor-wood,stuff
+119,119,flower,stuff
+120,120,fog,stuff
+121,121,food-other,stuff
+122,122,fruit,stuff
+123,123,furniture-other,stuff
+124,124,grass,stuff
+125,125,gravel,stuff
+126,126,ground-other,stuff
+127,127,hill,stuff
+128,128,house,stuff
+129,129,leaves,stuff
+130,130,light,stuff
+131,131,mat,stuff
+132,132,metal,stuff
+133,133,mirror-stuff,stuff
+134,134,moss,stuff
+135,135,mountain,stuff
+136,136,mud,stuff
+137,137,napkin,stuff
+138,138,net,stuff
+139,139,paper,stuff
+140,140,pavement,stuff
+141,141,pillow,stuff
+142,142,plant-other,stuff
+143,143,plastic,stuff
+144,144,platform,stuff
+145,145,playingfield,stuff
+146,146,railing,stuff
+147,147,railroad,stuff
+148,148,river,stuff
+149,149,road,stuff
+150,150,rock,stuff
+151,151,roof,stuff
+152,152,rug,stuff
+153,153,salad,stuff
+154,154,sand,stuff
+155,155,sea,stuff
+156,156,shelf,stuff
+157,157,sky-other,stuff
+158,158,skyscraper,stuff
+159,159,snow,stuff
+160,160,solid-other,stuff
+161,161,stairs,stuff
+162,162,stone,stuff
+163,163,straw,stuff
+164,164,structural-other,stuff
+165,165,table,stuff
+166,166,tent,stuff
+167,167,textile-other,stuff
+168,168,towel,stuff
+169,169,tree,stuff
+170,170,vegetable,stuff
+171,171,wall-brick,stuff
+172,172,wall-concrete,stuff
+173,173,wall-other,stuff
+174,174,wall-panel,stuff
+175,175,wall-stone,stuff
+176,176,wall-tile,stuff
+177,177,wall-wood,stuff
+178,178,water-other,stuff
+179,179,waterdrops,stuff
+180,180,window-blind,stuff
+181,181,window-other,stuff
+182,182,wood,stuff
