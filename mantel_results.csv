@@ -15,22 +15,22 @@ SemanticCMC - 1 sec,-0.04642,0.931,Partial mantel to LCH (controlling for random
 SemanticCMC - 10 sec,0.1654,0.001,Partial mantel to LCH (controlling for random),intact
 SemanticCMC - 60 sec,0.2195,0.001,Partial mantel to LCH (controlling for random),intact
 SemanticCMC - 5min,0.1772,0.001,Partial mantel to LCH (controlling for random),intact
-random weights,0.03477,0.184,Mantel test to LCH,blur (sigma=10.0)
-supervised,0.07216,0.004,Mantel test to LCH,blur (sigma=10.0)
-{Lab} (Tian et al.),0.019666,0.32,Mantel test to LCH,blur (sigma=10.0)
-Movie Lab,0.09133,0.007,Mantel test to LCH,blur (sigma=10.0)
-SemanticCMC - 1 sec,-0.002675,0.518,Mantel test to LCH,blur (sigma=10.0)
-SemanticCMC - 10 sec,0.2134,0.001,Mantel test to LCH,blur (sigma=10.0)
-SemanticCMC - 60 sec,0.2136,0.001,Mantel test to LCH,blur (sigma=10.0)
-SemanticCMC - 5min,0.2163,0.001,Mantel test to LCH,blur (sigma=10.0)
-random weights,0.00,0.00,Partial mantel to LCH (controlling for random),blur (sigma=10.0)
-supervised,0.03881,0.069,Partial mantel to LCH (controlling for random),blur (sigma=10.0)
-{Lab} (Tian et al.),0.01605,0.325,Partial mantel to LCH (controlling for random),blur (sigma=10.0)
-Movie Lab,0.1016,0.002,Partial mantel to LCH (controlling for random),blur (sigma=10.0)
-SemanticCMC - 1 sec,-0.03623,0.856,Partial mantel to LCH (controlling for random),blur (sigma=10.0)
-SemanticCMC - 10 sec,0.2172,0.001,Partial mantel to LCH (controlling for random),blur (sigma=10.0)
-SemanticCMC - 60 sec,0.2116,0.001,Partial mantel to LCH (controlling for random),blur (sigma=10.0)
-SemanticCMC - 5min,0.2155,0.001,Partial mantel to LCH (controlling for random),blur (sigma=10.0)
+random weights,0.03477,0.184,Mantel test to LCH,blur (sigma=10.0 kernel=(15*15))
+supervised,0.07216,0.004,Mantel test to LCH,blur (sigma=10.0 kernel=(15*15))
+{Lab} (Tian et al.),0.019666,0.32,Mantel test to LCH,blur (sigma=10.0 kernel=(15*15))
+Movie Lab,0.09133,0.007,Mantel test to LCH,blur (sigma=10.0 kernel=(15*15))
+SemanticCMC - 1 sec,-0.002675,0.518,Mantel test to LCH,blur (sigma=10.0 kernel=(15*15))
+SemanticCMC - 10 sec,0.2134,0.001,Mantel test to LCH,blur (sigma=10.0 kernel=(15*15))
+SemanticCMC - 60 sec,0.2136,0.001,Mantel test to LCH,blur (sigma=10.0 kernel=(15*15))
+SemanticCMC - 5min,0.2163,0.001,Mantel test to LCH,blur (sigma=10.0 kernel=(15*15))
+random weights,0.00,0.00,Partial mantel to LCH (controlling for random),blur (sigma=10.0 kernel=(15*15))
+supervised,0.03881,0.069,Partial mantel to LCH (controlling for random),blur (sigma=10.0 kernel=(15*15))
+{Lab} (Tian et al.),0.01605,0.325,Partial mantel to LCH (controlling for random),blur (sigma=10.0 kernel=(15*15))
+Movie Lab,0.1016,0.002,Partial mantel to LCH (controlling for random),blur (sigma=10.0 kernel=(15*15))
+SemanticCMC - 1 sec,-0.03623,0.856,Partial mantel to LCH (controlling for random),blur (sigma=10.0 kernel=(15*15))
+SemanticCMC - 10 sec,0.2172,0.001,Partial mantel to LCH (controlling for random),blur (sigma=10.0 kernel=(15*15))
+SemanticCMC - 60 sec,0.2116,0.001,Partial mantel to LCH (controlling for random),blur (sigma=10.0 kernel=(15*15))
+SemanticCMC - 5min,0.2155,0.001,Partial mantel to LCH (controlling for random),blur (sigma=10.0 kernel=(15*15))
 random weights,0.06292,0.009,Mantel test to LCH,objects only
 supervised,0.07216,0.009,Mantel test to LCH,objects only
 {Lab} (Tian et al.),-9.28e-05,0.466,Mantel test to LCH,objects only
