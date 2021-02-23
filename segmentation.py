@@ -1,13 +1,20 @@
+from torch._C import autocast_increment_nesting
 from torchvision import models
 from PIL import Image
 import matplotlib.pyplot as plt
 import torch
+import torch.hub
 import torch.fft
 import torchvision.transforms as T
+import torch.nn.functional as F
 import numpy as np
 import math
+import pandas as pd
 
 dlab = models.segmentation.deeplabv3_resnet101(pretrained=1).eval()
+
+#COCO Stuff trained model
+dlab_coco = torch.hub.load("kazuto1011/deeplab-pytorch", "deeplabv2_resnet101", pretrained='cocostuff164k', n_classes=182).eval()
 
 class NormalizeInverse(T.Normalize):
   """
@@ -46,7 +53,7 @@ def segment_objects(segmap, img, nc=21):
 
   for l in range(0, nc):
     idx = segmap == l
-    if l == 0:
+    if l == 0: 
         r[idx] = label_colors[l, 0]
         g[idx] = label_colors[l, 1]
         b[idx] = label_colors[l, 2]
@@ -107,17 +114,17 @@ def segment(net, path):
   plt.imshow(bg); plt.axis('off'); plt.savefig('segmented_bg.png')
 
 def phase_scramble(inp_tensor):
-  inp_fft = torch.fft.rfft(inp_tensor)
+  inp_fft = torch.fft.rfftn(inp_tensor, dim=(2,3))
   
-  inp_scramb = torch.zeros_like(inp_fft)
-  for idx, x in np.ndenumerate(inp_fft):
-      new_phase = np.random.uniform(-math.pi, math.pi)
-      inp_scramb[idx] = x.real + 1j*new_phase
+  new_phase=np.random.uniform(-math.pi, math.pi, size=inp_fft.size()[2:])
+  inp_scramb = inp_fft * np.exp(1j*new_phase)
   
-  inp_scramb = torch.fft.irfft(inp_scramb)
+  inp_scramb = torch.fft.irfftn(inp_scramb, dim=(2,3))
   return inp_scramb
 
-def segment_with_fourier(inp, inp_mean, inp_std, net=dlab, remove='background'):
+def segment_with_fourier(inp, inp_mean, inp_std, model, remove='background'):
+  """must specify net which is either 'dlab_pascal' or 'dlab_coco'"""
+  
   # restructure the tensor for de-normalization and reconstruct 
   img_unorm = NormalizeInverse(mean=inp_mean, std=inp_std)(inp)
 
@@ -128,11 +135,29 @@ def segment_with_fourier(inp, inp_mean, inp_std, net=dlab, remove='background'):
   trf = T.Compose([T.Normalize(mean = mean, 
                                std = std)])
   
-  img_seg_norm = trf(img_unorm).cpu()
+  img_seg_norm = trf(img_unorm).cpu() #this is the image normalized to segmentation (imgnet) mean and std
   
   # Get segmentation map using Google DeepLab
-  out = net(img_seg_norm)['out']
-  segmap = torch.argmax(out.squeeze(), dim=0).detach().cpu().numpy()
+  if model == 'dlab_pascal':
+    net = dlab
+    out = net(img_seg_norm)['out']
+    segmap = torch.argmax(out.squeeze(), dim=0).detach().cpu().numpy()
+  elif model == 'dlab_coco':
+    net = dlab_coco
+    out = net(img_seg_norm)
+    _, _, H, W = img_seg_norm.shape
+    out = F.interpolate(out, size=(H,W), mode="bilinear", align_corners=False)
+    segmap = torch.argmax(out.squeeze(), dim=0).detach().cpu().numpy()
+
+    # Get stuff and thing classes for coco-stuff segmentation
+    coco_df = pd.read_csv('./cocostuff_labels.csv', index_col=0)
+    coco_types = coco_df['type'].to_dict()
+
+    segmap_types = {k:v for k,v in coco_types.items() if k in segmap}
+    stuff_idxs = [k for k,v in segmap_types.items() if v=='stuff' or v=='unlabeled']
+    thing_idxs = [k for k,v in segmap_types.items() if v=='thing']
+
+    #TODO: convert to zero/non-zero for stuff/things or bg
 
   # Phase scramble input image tensor for replacement
   img_scrambled = phase_scramble(img_seg_norm)
@@ -140,7 +165,7 @@ def segment_with_fourier(inp, inp_mean, inp_std, net=dlab, remove='background'):
   # Convert both images (img and scrambled) to RGB for segmentation mapping
   rgb_img = img_seg_norm[0,:,:,:].numpy().transpose(1,2,0)
   rgb_scramb = img_scrambled[0,:,:,:].numpy().transpose(1,2,0)
-  
+
   if remove == 'background':
     r = np.where(segmap == 0, rgb_img[:,:,0], rgb_scramb[:,:,0])
     g = np.where(segmap == 0, rgb_img[:,:,1], rgb_scramb[:,:,1])
@@ -154,13 +179,13 @@ def segment_with_fourier(inp, inp_mean, inp_std, net=dlab, remove='background'):
   else:
     raise ValueError('please select either background or objects to remove')
   
-  rgb = rgb.transpose(2,0,1)
-  rgb = torch.from_numpy(rgb)
+  rgb = rgb.transpose(2,0,1) ; rgb_scramb = rgb_scramb.transpose(2,0,1)
+  rgb = torch.from_numpy(rgb) ; rgb_scramb = torch.from_numpy(rgb_scramb)
   
-  rgb_unorm = NormalizeInverse(mean=mean, std=std)(rgb)
-  rgb_inp_norm = T.Normalize(mean=inp_mean, std=inp_std)(rgb_unorm)
+  rgb_unorm = NormalizeInverse(mean=mean, std=std)(rgb) ; rgb_scramb_unorm = NormalizeInverse(mean=mean, std=std)(rgb_scramb)
+  rgb_inp_norm = T.Normalize(mean=inp_mean, std=inp_std)(rgb_unorm) ; rgb_scramb_inp_norm = T.Normalize(mean=inp_mean, std=inp_std)(rgb_scramb_unorm)
   
-  return rgb_inp_norm
+  return rgb_inp_norm , rgb_scramb_inp_norm
 
 def segment_vals(inp, inp_mean, inp_std, net=dlab, remove='background'):
   """ 
