@@ -53,3 +53,6 @@ activations/*
 
 # exclude all rdms for now
 rdms/*
+
+# sample imgs no need to push
+imgs/*
