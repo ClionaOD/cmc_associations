@@ -213,8 +213,8 @@ if __name__ == '__main__':
     import torch
     model = alexnet().cuda()
     data = torch.rand(10, 3, 224, 224).cuda()
-    out = model.compute_feat(data, 5)
+    out = model.forward(data, 5)
 
     for i in range(10):
-        out = model.compute_feat(data, i)
+        out = model.forward(data, i)
         print(i, out.shape)
