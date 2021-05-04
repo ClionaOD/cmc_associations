@@ -1,0 +1,92 @@
+,0,defs,syns
+0,person,a human being,person.n.01
+1,bicycle,a wheeled vehicle that has two wheels and is moved by foot pedals,bicycle.n.01
+2,car,a motor vehicle with four wheels; usually propelled by an internal combustion engine,car.n.01
+3,motorcycle,a motor vehicle with two wheels and a strong frame,motorcycle.n.01
+4,airplane,an aircraft that has a fixed wing and is powered by propellers or jets,airplane.n.01
+5,bus,a vehicle carrying many passengers; used for public transport,bus.n.01
+6,train,public transport provided by a line of railway cars coupled together and drawn by a locomotive,train.n.01
+7,truck,an automotive vehicle suitable for hauling,truck.n.01
+8,boat,a small vessel for travel on water,boat.n.01
+9,traffic light,a visual signal to control the flow of traffic at intersections,traffic_light.n.01
+10,fire hydrant,an upright hydrant for drawing water to use in fighting a fire,fireplug.n.01
+11,street sign,a sign visible from the street,street_sign.n.01
+12,stop sign,a sign visible from the street,street_sign.n.01
+13,parking meter,a coin-operated timer located next to a parking space; depositing money into it entitles you to park your car there for a specified length of time,parking_meter.n.01
+14,bench,a long seat for more than one person,bench.n.01
+15,bird,warm-blooded egg-laying vertebrates characterized by feathers and forelimbs modified as wings,bird.n.01
+16,cat,feline mammal usually having thick soft fur and no ability to roar: domestic cats; wildcats,cat.n.01
+17,dog,a member of the genus Canis (probably descended from the common wolf) that has been domesticated by man since prehistoric times; occurs in many breeds,dog.n.01
+18,horse,solid-hoofed herbivorous quadruped domesticated since prehistoric times,horse.n.01
+19,sheep,woolly usually horned ruminant mammal related to the goat,sheep.n.01
+20,cow,female of domestic cattle:,cow.n.01
+21,elephant,five-toed pachyderm,elephant.n.01
+22,bear,massive plantigrade carnivorous or omnivorous mammals with long shaggy coats and strong claws,bear.n.01
+23,zebra,any of several fleet black-and-white striped African equines,zebra.n.01
+24,giraffe,tallest living quadruped; having a spotted coat and small horns and very long neck and legs; of savannahs of tropical Africa,giraffe.n.01
+25,hat,headdress that protects the head from bad weather; has shaped crown and usually a brim,hat.n.01
+26,backpack,a bag carried by a strap on your back or shoulder,backpack.n.01
+27,umbrella,a lightweight handheld collapsible canopy,umbrella.n.01
+28,shoe,footwear shaped to fit the foot (below the ankle) with a flexible upper of leather or plastic and a sole and heel of heavier material,shoe.n.01
+29,eye glasses,optical instrument consisting of a frame that holds a pair of lenses for correcting defective vision,spectacles.n.01
+30,handbag,a container used for carrying money and small personal items or accessories (especially by women),bag.n.04
+31,tie,neckwear consisting of a long narrow piece of material worn (mostly by men) under a collar and tied in knot at the front,necktie.n.01
+32,suitcase,a portable rectangular container for carrying clothes,bag.n.06
+33,frisbee,"a light, plastic disk about 10 inches in diameter; propelled with a flip of the wrist for recreation or competition",frisbee.n.01
+34,skis,narrow wood or metal or plastic runners used in pairs for gliding over snow,ski.n.01
+35,snowboard,a board that resembles a broad ski or a small surfboard; used in a standing position to slide down snow-covered slopes,snowboard.n.01
+36,sports ball,round object that is hit or thrown or kicked in games,ball.n.01
+37,kite,plaything consisting of a light frame covered with tissue paper; flown in wind at end of a string,kite.n.03
+38,baseball bat,an implement used in baseball by the batter,baseball_bat.n.01
+39,baseball glove,the handwear used by fielders in playing baseball,baseball_glove.n.01
+40,skateboard,a board with wheels that is ridden in a standing or crouching position and propelled by foot,skateboard.n.01
+41,surfboard,a narrow buoyant board for riding surf,surfboard.n.01
+42,tennis racket,a racket used to play tennis,tennis_racket.n.01
+43,bottle,a glass or plastic vessel used for storing drinks or other liquids; typically cylindrical without handles and with a narrow neck that can be plugged or capped,bottle.n.01
+44,plate,dish on which food is served or from which food is eaten,plate.n.04
+45,wine glass,a glass that has a stem and in which wine is served,wineglass.n.01
+46,cup,a small open container usually used for drinking; usually has a handle,cup.n.01
+47,fork,cutlery used for serving and eating food,fork.n.01
+48,knife,edge tool used as a cutting instrument; has a pointed blade with a sharp edge and a handle,knife.n.01
+49,spoon,a piece of cutlery with a shallow bowl-shaped container and a handle; used to stir or serve or take up food,spoon.n.01
+50,bowl,a round vessel that is open at the top; used chiefly for holding food or liquids,bowl.n.01
+51,banana,elongated crescent-shaped yellow fruit with soft sweet flesh,banana.n.02
+52,apple,fruit with red or yellow or green skin and sweet to tart crisp whitish flesh,apple.n.01
+53,sandwich,two (or more) slices of bread with a filling between them,sandwich.n.01
+54,orange,round yellow to orange fruit of any of several citrus trees,orange.n.01
+55,broccoli,plant with dense clusters of tight green flower buds,broccoli.n.01
+56,carrot,deep orange edible root of the cultivated carrot plant,carrot.n.01
+57,hot dog,a frankfurter served hot on a bun,hotdog.n.02
+58,pizza,Italian open pie made of thin bread dough spread with a spiced mixture of e.g. tomato sauce and cheese,pizza.n.01
+59,donut,a small ring-shaped friedcake,doughnut.n.02
+60,cake,"baked goods made from or based on a mixture of flour, sugar, eggs, and fat",cake.n.03
+61,chair,"a seat for one person, with a support for the back",chair.n.01
+62,couch,an upholstered seat for more than one person,sofa.n.01
+63,potted plant,a container in which plants are cultivated,pot.n.04
+64,bed,a piece of furniture that provides a place to sleep,bed.n.01
+65,mirror,polished surface that forms images by reflecting light,mirror.n.01
+66,dining table,a table at which meals are served,dining_table.n.01
+67,window,a framework of wood or metal that contains a glass windowpane and is built into a wall or roof to admit light or air,window.n.01
+68,desk,a piece of furniture with a writing surface and usually drawers or other compartments,desk.n.01
+69,toilet,a plumbing fixture for defecation and urination,toilet.n.02
+70,door,a swinging or sliding barrier that will close the entrance to a room or building or vehicle,door.n.01
+71,tv,a telecommunication system that transmits images of objects (stationary or moving) between distant points,television.n.02
+72,laptop,a portable computer small enough to use in your lap,laptop.n.01
+73,mouse,a hand-operated electronic device that controls the coordinates of a cursor on your computer screen as you move it around on a pad; on the bottom of the device is a ball that rolls on the surface of the pad,mouse.n.04
+74,remote,a device that can be used to control a machine or apparatus from a distance,remote_control.n.01
+75,keyboard,device consisting of a set of keys on a piano or organ or typewriter or typesetting machine or computer or the like,keyboard.n.01
+76,cell phone,"a hand-held mobile radiotelephone for use in an area divided into small sections, each with its own short-range transmitter/receiver'",cellular_telephone.n.01
+77,microwave,kitchen appliance that cooks food by passing an electromagnetic wave through it; heat results from the absorption of energy by the water molecules in the food,microwave.n.02
+78,oven,kitchen appliance used for baking or roasting,oven.n.01
+79,toaster,a kitchen appliance (usually electric) for toasting bread,toaster.n.02
+80,sink,plumbing fixture consisting of a water basin fixed to a wall or floor and having a drainpipe,sink.n.01
+81,refrigerator,white goods in which food can be stored at low temperatures,refrigerator.n.01
+82,blender,an electrically powered mixer with whirling blades that mix or chop or liquefy foods,blender.n.01
+83,book,a written work or composition that has been published (printed on pages bound together),book.n.01
+84,clock,a timepiece that shows the time of day,clock.n.01
+85,vase,an open jar of glass or porcelain used as an ornament or to hold flowers,vase.n.01
+86,scissors,an edge tool having two crossed pivoting blades,scissors.n.01
+87,teddy bear,plaything consisting of a child's toy bear (usually plush and stuffed with soft materials),teddy.n.01
+88,hair drier,a hand-held electric blower that can blow warm air onto the hair; used for styling hair,hand_blower.n.01
+89,toothbrush,small brush; has long handle; used to clean teeth,toothbrush.n.01
+90,hair brush,a dense growth of bushes,brush.n.01
