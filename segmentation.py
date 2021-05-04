@@ -81,6 +81,45 @@ def segment_background(seg_img, transf_img, nc=21):
   rgb = np.stack([r, g, b], axis=2)
   return rgb
 
+def segment_white(inp, net=dlab, remove='background'):
+  # Use ImageNet mean and std for segmentation
+  mean = [0.485, 0.456, 0.406]
+  std = [0.229, 0.224, 0.225]
+  
+  trf = T.Compose([T.Normalize(mean = mean, 
+                               std = std)])
+  
+  img_norm = trf(inp).cpu() 
+
+  out = net(img_norm)['out']
+  segmap = torch.argmax(out.squeeze(), dim=0).detach().cpu().numpy()
+  
+  #reshape torch tensor for segmentation
+  rgb_img = img_norm[0,:,:,:].numpy().transpose(1,2,0)
+
+  if remove=='background':
+    #place objects on white background
+    obj = segment_objects(segmap, rgb_img)
+    plt.imshow(obj); plt.axis('off'); plt.savefig('segmented_obj.png')
+    
+    obj = obj.transpose(2,0,1)
+    obj = torch.from_numpy(obj)
+    
+    obj_unorm = NormalizeInverse(mean=mean, std=std)(obj)
+    return obj_unorm
+  elif remove=='objects':
+    #replace objects with white, show only background
+    bg = segment_background(segmap, rgb_img)
+    plt.imshow(bg); plt.axis('off'); plt.savefig('segmented_bg.png')
+    
+    bg = bg.transpose(2,0,1)
+    bg = torch.from_numpy(bg)
+    
+    bg_unorm = NormalizeInverse(mean=mean, std=std)(bg)
+    return bg_unorm
+  else:
+    raise ValueError('not supported, please select either background or objects')
+
 def segment(net, path):
   img = Image.open(path)
   
@@ -122,11 +161,12 @@ def phase_scramble(inp_tensor):
   inp_scramb = torch.fft.irfftn(inp_scramb, dim=(2,3))
   return inp_scramb
 
-def segment_with_fourier(inp, inp_mean, inp_std, model, remove='background'):
+def segment_with_fourier(inp, model, inp_mean=[], inp_std=[], remove='background'):
   """must specify net which is either 'dlab_pascal' or 'dlab_coco'"""
   
   # restructure the tensor for de-normalization and reconstruct 
-  img_unorm = NormalizeInverse(mean=inp_mean, std=inp_std)(inp)
+  # RM - won't work with get_activations
+  #img_unorm = NormalizeInverse(mean=inp_mean, std=inp_std)(inp)
 
   # Use ImageNet mean and std for segmentation
   mean = [0.485, 0.456, 0.406]
@@ -135,7 +175,7 @@ def segment_with_fourier(inp, inp_mean, inp_std, model, remove='background'):
   trf = T.Compose([T.Normalize(mean = mean, 
                                std = std)])
   
-  img_seg_norm = trf(img_unorm).cpu() #this is the image normalized to segmentation (imgnet) mean and std
+  img_seg_norm = trf(inp).cpu() #this is the image normalized to segmentation (imgnet) mean and std
   
   # Get segmentation map using Google DeepLab
   if model == 'dlab_pascal':
@@ -158,6 +198,7 @@ def segment_with_fourier(inp, inp_mean, inp_std, model, remove='background'):
     thing_idxs = [k for k,v in segmap_types.items() if v=='thing']
 
     #TODO: convert to zero/non-zero for stuff/things or bg
+    
 
   # Phase scramble input image tensor for replacement
   img_scrambled = phase_scramble(img_seg_norm)
@@ -183,9 +224,9 @@ def segment_with_fourier(inp, inp_mean, inp_std, model, remove='background'):
   rgb = torch.from_numpy(rgb) ; rgb_scramb = torch.from_numpy(rgb_scramb)
   
   rgb_unorm = NormalizeInverse(mean=mean, std=std)(rgb) ; rgb_scramb_unorm = NormalizeInverse(mean=mean, std=std)(rgb_scramb)
-  rgb_inp_norm = T.Normalize(mean=inp_mean, std=inp_std)(rgb_unorm) ; rgb_scramb_inp_norm = T.Normalize(mean=inp_mean, std=inp_std)(rgb_scramb_unorm)
+  #rgb_inp_norm = T.Normalize(mean=inp_mean, std=inp_std)(rgb_unorm) ; rgb_scramb_inp_norm = T.Normalize(mean=inp_mean, std=inp_std)(rgb_scramb_unorm)
   
-  return rgb_inp_norm , rgb_scramb_inp_norm
+  return rgb_unorm , rgb_scramb_unorm
 
 def segment_vals(inp, inp_mean, inp_std, net=dlab, remove='background'):
   """ 
@@ -194,7 +235,7 @@ def segment_vals(inp, inp_mean, inp_std, net=dlab, remove='background'):
   Thus, the input tensor must be denormalized from whatever its transform is
   in is torch.Size([1,3,224,224]) or whatever h*w are
   """
-  # restructure the tensory for de-normalization and reconstruct 
+  # restructure the tensor for de-normalization and reconstruct 
   img_unorm = NormalizeInverse(mean=inp_mean, std=inp_std)(inp)
 
   # Use ImageNet mean and std for segmentation
@@ -227,7 +268,7 @@ def segment_vals(inp, inp_mean, inp_std, net=dlab, remove='background'):
     bg = segment_background(segmap, rgb_img)
     
     bg = bg.transpose(2,0,1)
-    bg = torch.from_numpy(bg)
+    bg = torch.from_numpy(bg) 
     
     bg_unorm = NormalizeInverse(mean=mean, std=std)(bg)
     bg_inp_norm = T.Normalize(mean=inp_mean, std=inp_std)(bg_unorm)
