@@ -6,6 +6,7 @@ import os
 import sys
 import random
 import math
+import natsort
 import unittest
 from numpy.lib.arraysetops import in1d
 from numpy.lib.npyio import save
@@ -18,6 +19,7 @@ import torch.utils.data
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from torchvision.models import alexnet
+from torch.utils.data import Dataset
 
 from dataset import RGB2Lab
 from models.alexnet import TemporalAlexNetCMC
@@ -31,11 +33,11 @@ def parse_option():
     parser.add_argument('--model_path', type=str, help='model to get activations of')
     parser.add_argument('--save_path', type=str,help='path to save activations')
     parser.add_argument('--image_path', type=str, help='path to images for activation analysis')
-   
+    
     parser.add_argument('--transform', type=str, default='distort', choices=['Lab','distort'], help='color transform to use')
-   
+    
     parser.add_argument('--supervised', type=bool, default=False, help='whether to test against supervised AlexNet')
-   
+    
     parser.add_argument('--segment', type=str, default=None, choices=['rm_bg','rm_obj'], help='whether to segment the objects from bg and which to remove')
     
     parser.add_argument('--blur', type=bool, default=None, help='if not None, this will blur the image using a Gaussian kernel with sigma and kernel defined below')
@@ -55,19 +57,21 @@ def get_color_distortion(s=1.0):
         rnd_gray])
     return color_distort
 
-class ImageFolderWithPaths(datasets.ImageFolder):
-    """Custom dataset that includes image file paths. Extends
-    torchvision.datasets.ImageFolder
-    """
-    # override the __getitem__ method. this is the method that dataloader calls
-    def __getitem__(self, index):
-        # this is what ImageFolder normally returns 
-        original_tuple = super(ImageFolderWithPaths, self).__getitem__(index)
-        # the image file path
-        path = self.imgs[index][0]
-        # make a new tuple that includes original and the path
-        tuple_with_path = (original_tuple + (path,))
-        return tuple_with_path
+class CustomDataSet(Dataset):
+    def __init__(self, main_dir, transform):
+        self.main_dir = main_dir
+        self.transform = transform
+        all_imgs = os.listdir(main_dir)
+        self.total_imgs = natsort.natsorted(all_imgs)
+
+    def __len__(self):
+        return len(self.total_imgs)
+
+    def __getitem__(self, idx):
+        img_loc = os.path.join(self.main_dir, self.total_imgs[idx])
+        image = Image.open(img_loc).convert("RGB")
+        tensor_image = self.transform(image)
+        return tensor_image, self.total_imgs[idx]
 
 def compute_features(dataloader, model, categories, layers):
     print('Compute features')
@@ -82,68 +86,16 @@ def compute_features(dataloader, model, categories, layers):
             m.register_forward_hook(_store_feats)
     
     activations = {categ:{l:[] for l in layers} for categ in categories}
-    #categ is the n0XXX imagenet class - n_categs = 256 (len activations = 256)
-    #l is the layer ('conv1' etc.) - running avg of acts, sum with each then divide by 150 (150 imgs per class)
+    #categ is the imagename
+    #l is the layer ('conv1' etc.) - running avg of acts (n=1 here)
 
     print('... working on activations ...')
     
-    #choose random indices to save examples
-    save_idx = random.sample(range(len(dataloader)), k=15)
-    save_idx.append(0)
-    
-    for i, input_tensor in enumerate(dataloader):  
+    for i, (input_var, image_name) in enumerate(dataloader):  
         with torch.no_grad():
-            
-            input_var, label = input_tensor[0].cuda(),input_tensor[2][0]
-            #TODO: check / make less specific
-            category = label.split('/')[-2]
-            if i in save_idx:
-                imsave(input_var[0,:,:,:].cpu(),title=f'./imgs/rm_bg/img{i}_input.png')
-            
-            if args.segment == 'rm_bg':
-                
-                input_var, scramb = segment_with_fourier(
-                    input_var, 
-                    inp_mean = [(0 + 100) / 2, (-86.183 + 98.233) / 2, (-107.857 + 94.478) / 2],
-                    inp_std = [(100 - 0) / 2, (86.183 + 98.233) / 2, (107.857 + 94.478) / 2],
-                    #inp_mean=[0.4493, 0.4348, 0.3970], 
-                    #inp_std=[0.3030, 0.3001, 0.3016], 
-                    remove='background',
-                    model='dlab_pascal')
-                
-                input_var = input_var.unsqueeze(0)
-                
-                if i in save_idx:
-                    imsave(input_var[0,:,:,:],title=f'./imgs/rm_bg/img{i}_segmented.png')
-                    imsave(scramb,title=f'./imgs/rm_bg/img{i}_scrambled.png')
-            
-            elif args.segment == 'rm_obj':
-                input_var, scramb = segment_with_fourier(
-                    input_var, 
-                    inp_mean = [(0 + 100) / 2, (-86.183 + 98.233) / 2, (-107.857 + 94.478) / 2],
-                    inp_std = [(100 - 0) / 2, (86.183 + 98.233) / 2, (107.857 + 94.478) / 2],
-                    #inp_mean=[0.4493, 0.4348, 0.3970], 
-                    #inp_std=[0.3030, 0.3001, 0.3016],  
-                    remove='objects',
-                    model='dlab_pascal')
-                input_var = input_var.unsqueeze(0)
-                
-                #_img_sample_path = './imgs/rm_obj'
-                #if i in save_idx and not len(os.listdir(_img_sample_path))==15:
-                #    imsave(input_var[0,:,:,:],title=f'{_img_sample_path}/seg_obj_img_{i}.png')
-            
-            if args.blur is not None:
-                im1 = input_var[0]
-            
-                gauss = transforms.GaussianBlur(kernel_size=(args.kernel_size,args.kernel_size), sigma=(args.sigma,args.sigma))
-                input_var = gauss(input_var)
+            input_var.cuda()
+            category = image_name[0]
 
-                im = input_var[0]  
-
-                #if i in save_idx:
-                #    imsave(im1.cpu(),f'./imgs/blur_sigma10_kernel33/imsave_pre_{i}.jpg') 
-                #    imsave(im.cpu(),f'./imgs/blur_sigma10_kernel33/imsave_blur_{i}.jpg') 
-                          
             input_var = input_var.float().cuda()
             _model_feats = []
             model(input_var)
@@ -154,14 +106,6 @@ def compute_features(dataloader, model, categories, layers):
 
             for idx, acts in enumerate(_model_feats): 
                 activations[category][layers[idx]] = activations[category][layers[idx]] + acts
-            
-    
-    print('... getting mean ...')
-    for categ in categories:
-        for layer in layers:
-            activations[categ][layer] = (activations[categ][layer] / 150)
-            #150 is because there are 256 * 150 images in the test set, need to make an argument
-            #remove first dimension for batch size
 
     return activations
 
@@ -216,7 +160,7 @@ def get_activations(imgPath, model, args, mean=[(0 + 100) / 2, (-86.183 + 98.233
         ])
     
     #load the data
-    dataset = ImageFolderWithPaths(imgPath, transform=train_transform)
+    dataset = CustomDataSet(imgPath, transform=train_transform)
     
     dataloader = torch.utils.data.DataLoader(dataset,
                                             batch_size=1,
@@ -224,30 +168,27 @@ def get_activations(imgPath, model, args, mean=[(0 + 100) / 2, (-86.183 + 98.233
                                             pin_memory=True,
                                             shuffle = False)
     
-    #TODO: check/make less specific
-    categories = []
+    images = []
     for d in os.listdir(args.image_path):
-        if os.path.isdir(f'{args.image_path}/{d}'):
-            categories.append(d)
+        images.append(d)
 
     layers = ['conv1', 'conv2', 'conv3', 'conv4', 'conv5', 'fc6', 'fc7']
     
     #compute the features
-    mean_activations = compute_features(dataloader, model, categories=categories, layers=layers)
+    mean_activations = compute_features(dataloader, model, categories=images, layers=layers)
     
     return mean_activations
 
 def main(args, model_weights=''):
     modelpth = os.path.join(args.model_path, model_weights)
-    print(f'MODEL: {model_weights}')
     
     if not args.supervised:
         print('not supervised')
         modelpth = os.path.join(args.model_path, model_weights)
-
+        
         if 'lab' in modelpth.lower():
             args.transform = 'Lab'
-
+        
         if 'finetune' in modelpth:
             checkpoint = torch.load(modelpth)['model']
         else:
@@ -256,7 +197,7 @@ def main(args, model_weights=''):
         model = TemporalAlexNetCMC()
         model.load_state_dict(checkpoint)
         model.cuda()
-
+        
         activations = get_activations(args.image_path, model, args)
     else:
         print('supervised')
@@ -264,7 +205,7 @@ def main(args, model_weights=''):
         model.cuda()
 
         activations = get_activations(args.image_path, model, args, mean=[0.485,0.456,0.406], std=[0.229, 0.224, 0.225])
-
+    
     print('done ... saving')
 
     if not args.supervised:
