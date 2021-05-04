@@ -1,20 +1,62 @@
 library("vegan")
 
-lch <- read.table("./results/lch_df.txt")
-random <- read.csv("./rdms/segmentation/background_only/conv5/random_conv5.csv")
+#layers <- c('conv1','conv2','conv3','conv4','conv5','fc6','fc7')
+layers <- c('conv5')
+rdm_folder <- "/data/movie-associations/rdms/segmentation/obj_trained/imgnet/rep_3_correct_color"
+save_path <- "/data/movie-associations/mantel_results/objtrain_imgnet_lch"
 
-files <- list.files(path="./rdms/blurring/conv5", pattern="*.csv", full.names=TRUE, recursive=FALSE)
+n_categories <- 256
+#n_categories <- 2000
 
-get_mantel <- function(rdm, lch, control) {
-   mantel <- mantel(rdm[2:257], lch)
-   partial <- mantel.partial(rdm[2:257],lch,control[2:257])
-   return(mantel, partial)
+lch <- read.table("/data/movie-associations/rdms/semantic_models/lch_distance_256-imgnet.txt") #actually using bold
+#bold <- read.csv("/data/movie-associations/rdms/semantic_models/MSCOCO_BOLD5000_2000_rdm.csv")
+    
+sem_model <- lch
+#sem_model <- bold[2:(n_categories+1)]
+
+for (layer in layers) {
+
+    rdm_path <- list.files(path=sprintf("%s/%s",rdm_folder,layer), pattern="*.csv", full.names=TRUE, recursive=FALSE)
+
+    print("semantic model read in")
+    random <- read.csv(sprintf("%s/%s/random_%s.csv",rdm_folder,layer,layer))
+    print("random read in")
+
+    call <- c()
+    pearson  <- c()
+    significance  <- c()
+
+    part_call <- c()
+    part_pearson  <- c()
+    part_significance  <- c()
+
+    for (rdm_file in rdm_path) {
+        rdm <- read.csv(rdm_file)
+        print(sprintf("rdm %s read in", rdm_file))
+        mantel <- mantel(rdm[2:(n_categories+1)], sem_model)
+        print(sprintf("mantel %s done", rdm_file))
+        
+        call<-append(call,sapply(strsplit(rdm_file,'/'), `[`, 10))
+        pearson<-append(pearson,mantel[3]$statistic)
+        significance<-append(significance,mantel[4]$signif)
+        
+        partial <- mantel.partial(rdm[2:(n_categories+1)],sem_model,random[2:(n_categories+1)])
+        print(sprintf("partial mantel %s done", rdm_file))
+        
+        part_call<-append(part_call,sapply(strsplit(rdm_file,'/'), `[`, 10))
+        part_pearson<-append(part_pearson,partial[3]$statistic)
+        part_significance<-append(part_significance,partial[4]$signif)
+    }
+
+    df <- data.frame(Model = call,
+                    Pearson = pearson,
+                    Sig = significance
+                    )
+    partial_df <- data.frame(Model = part_call,
+                    Pearson = part_pearson,
+                    Sig = part_significance
+                    )
+
+    out_df = rbind(df,partial_df)
+    write.csv(out_df,sprintf("%s/mantel_imgnet_lch_%s.csv", save_path, layer), row.names = FALSE)
 }
-
-lapply(files, get_mantel(x) {
-    rdm <- read.csv(x, header=TRUE) # load file
-    # apply function
-    list[mantel, partial] <- get_mantel(rdm,lch, random)
-    # write to file
-    write.table(out, "path/to/output", sep="\t", quote=FALSE, row.names=FALSE, col.names=TRUE)
-})

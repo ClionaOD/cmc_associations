@@ -6,7 +6,7 @@ import argparse
 import pandas as pd
 import numpy as np
 from nltk.corpus import wordnet as wn
-from skbio.stats.distance import mantel
+#from skbio.stats.distance import mantel
 
 def parse_option():
     parser = argparse.ArgumentParser('arguments for lch calculations')
@@ -89,4 +89,52 @@ def main(args):
         
 if __name__ == "__main__":
     args = parse_option()
+
+    #### working code for testing ####
+    with open('img_labels.pickle','rb') as f:
+        labels = pickle.load(f)
+
+    categs = pd.read_csv('./coco_labels.csv', header=None)
+
+    synonyms= {
+        'stop_sign':'signpost',
+        'eye_glasses':'spectacles',
+        'sports_ball':'ball',
+        'wine_glass':'wineglass',
+        'potted_plant':'flowerpot',
+        'hair_brush':'brush'
+    }
+
+    defs = []
+    synset = []
+    for word in categs[0].to_list():
+        if ' ' in word:
+            word=word.replace(' ','_')
+        syns = wn.synsets(word)
+        if not len(syns) == 0:
+            defs.append(syns[0].definition())
+            synset.append(syns[0])
+        else:
+            word = synonyms[word]
+            defs.append(wn.synsets(word)[0].definition())
+            synset.append(wn.synsets(word)[0])
+            print(word)
+    categs['defs'] = defs
+    categs['syns'] = synset
+
+    categs.to_csv('./wn_defs.csv')
+    all = []
+    for img, lst in labels.items():
+        syns = [wn.synsets(word) for word in lst]
+        syns = [[j for j in i if j.pos()=='n'] for i in syns]
+        all.append(syns)
+
+    unique = [[item for sublst in sub for item in sublst] for sub in all]
+    unique = list(set([item for sublst in unique for item in sublst]))
+    non_one = [syn for syn in unique if not str(syn)[-3]=='1']
+    for syn in non_one:
+        print(f"{syn}: \t {syn.definition()}")
+    print(unique)
+
+    ########
     main(args) 
