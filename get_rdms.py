@@ -86,9 +86,6 @@ def main(args):
 
 if __name__ == "__main__":
     args = parse_option()
-    args.image_path = '/data/movie-associations/MSCOCO_BOLD5000_2000'
-    args.activation_path = '/data/movie-associations/activations/segmentation/obj_trained/coco/rep_3_all/'  
-    args.rdm_path = '/data/movie-associations/rdms/segmentation/obj_trained/coco'
     args.single_layer = ['conv1','conv2','conv3','conv4','conv5','fc6','fc7']
     #args.single_layer = 'conv5'
     main(args)
