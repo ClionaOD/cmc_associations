@@ -38,7 +38,7 @@ def parse_option():
    
     parser.add_argument('--segment', type=str, default=None, choices=['rm_bg','rm_obj'], help='whether to segment the objects from bg and which to remove')
     
-    parser.add_argument('--blur', type=bool, default=None, help='if not None, this will blur the image using a Gaussian kernel with sigma and kernel defined below')
+    parser.add_argument('--blur', type=bool, default=False, help='if not None, this will blur the image using a Gaussian kernel with sigma and kernel defined below')
     parser.add_argument('--sigma', type=float, default=10.0, help='sigma size for blurring if args.blur is not None')
     parser.add_argument('--kernel_size', type=int, default=15, help='paramater for setting the gaussian kernel size if this is preferred for blurring')
 
@@ -132,18 +132,6 @@ def compute_features(dataloader, model, categories, layers):
                 #if i in save_idx and not len(os.listdir(_img_sample_path))==15:
                 #    imsave(input_var[0,:,:,:],title=f'{_img_sample_path}/seg_obj_img_{i}.png')
             
-            if args.blur is not None:
-                im1 = input_var[0]
-            
-                gauss = transforms.GaussianBlur(kernel_size=(args.kernel_size,args.kernel_size), sigma=(args.sigma,args.sigma))
-                input_var = gauss(input_var)
-
-                im = input_var[0]  
-
-                #if i in save_idx:
-                #    imsave(im1.cpu(),f'./imgs/blur_sigma10_kernel33/imsave_pre_{i}.jpg') 
-                #    imsave(im.cpu(),f'./imgs/blur_sigma10_kernel33/imsave_blur_{i}.jpg') 
-                          
             input_var = input_var.float().cuda()
             _model_feats = []
             model(input_var)
@@ -193,6 +181,7 @@ def get_activations(imgPath, model, args, mean=[(0 + 100) / 2, (-86.183 + 98.233
     mean = mean
     std = std
     normalize = transforms.Normalize(mean=mean, std=std)
+    gauss = transforms.GaussianBlur(kernel_size=(args.kernel_size,args.kernel_size), sigma=(args.sigma,args.sigma))
     
     if not args.supervised:   
         if args.transform == 'Lab':
@@ -207,6 +196,16 @@ def get_activations(imgPath, model, args, mean=[(0 + 100) / 2, (-86.183 + 98.233
             transforms.ToTensor(),
             normalize
         ])
+        
+        if args.blur:
+            train_transform = transforms.Compose([
+                transforms.Resize(224),
+                transforms.CenterCrop(224),
+                color_transfer,
+                transforms.ToTensor(),
+                gauss,
+                normalize
+            ])
     else:
         train_transform = transforms.Compose([
             transforms.Resize(224),
@@ -214,6 +213,15 @@ def get_activations(imgPath, model, args, mean=[(0 + 100) / 2, (-86.183 + 98.233
             transforms.ToTensor(),
             normalize
         ])
+        
+        if args.blur:
+            train_transform = transforms.Compose([
+                transforms.Resize(224),
+                transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                gauss,
+                normalize
+            ])
     
     #load the data
     dataset = ImageFolderWithPaths(imgPath, transform=train_transform)
@@ -268,13 +276,13 @@ def main(args, model_weights=''):
     print('done ... saving')
 
     if not args.supervised:
-        _file = m.split('_')[0]
+        _file = model_weights.split('_')[0]
         _save = f'{args.save_path}/{_file}_activations.pickle'
-        if args.blur is not None:
-            _save = f'{args.save_path}/{_file}_blur__activations.pickle'
+        if args.blur:
+            _save = f'{args.save_path}/{_file}_blur_sigma{args.sigma}_kernel{args.kernel_size}_activations.pickle'
     else:
         _save = f'{args.save_path}/supervised_activations.pickle'
-        if args.blur is not None:
+        if args.blur:
             _save = f'{args.save_path}/supervised_blur_sigma{args.sigma}_kernel{args.kernel_size}_activations.pickle'
     
     with open(_save, 'wb') as handle:
