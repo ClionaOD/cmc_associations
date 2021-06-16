@@ -5,12 +5,13 @@ import seaborn as sns
 import numpy as np
 
 partial = True
-p = 0.001
+n_models = 8
+p = 0.05 
 
-mantel_path = '/data/movie-associations/mantel_results/main_coco_brain/rep_2'
+mantel_path = '/data/movie-associations/mantel_results/objtrain_imgnet_brain'
 layers = ['conv1','conv2', 'conv3','conv4','conv5','fc6','fc7']
 rois = ['RHPPA', 'LHEarlyVis', 'LHOPA', 'RHEarlyVis', 'LHPPA', 'LHLOC', 'RHRSC', 'RHOPA', 'RHLOC', 'LHRSC']
-models = ['random',  'authorLab', 'movieLab', 'finetune1sec', 'finetune10sec', 'finetune60sec', 'finetune5min'] # put back in 'supervised',
+models = ['random', 'supervised',  'authorLab', 'movieLab', 'finetune1sec-objtrain', 'finetune10sec-objtrain', 'finetune60sec-objtrain', 'finetune5min-objtrain']
 
 fig, ((LH_EarlyVis,RH_EarlyVis),(LH_LOC,RH_LOC),(LH_OPA,RH_OPA),(LH_PPA,RH_PPA),(LH_RSC,RH_RSC)) = plt.subplots(nrows=5,ncols=2,figsize=(8.27,11.69), sharex=True, sharey=True)
 
@@ -21,18 +22,9 @@ for layer in layers:
 
 #include full mantel only
 if partial:
-    results_per_layer = {layer:{roi:df[7:] for roi,df in roi_dict.items()} for layer,roi_dict in results_per_layer.items()}
+    results_per_layer = {layer:{roi:df[n_models:] for roi,df in roi_dict.items()} for layer,roi_dict in results_per_layer.items()}
 else:
-    results_per_layer = {layer:{roi:df[:7] for roi,df in roi_dict.items()} for layer,roi_dict in results_per_layer.items()}
-
-#for concat dfs (messy, need to change)
-"""partial_idx = [2,3,7,8,9]
-full_idx = [0,1,4,5,6]
-if partial:
-    results_per_layer = {layer:{roi:df.iloc[partial_idx][['Model','Pearson','Sig']] for roi,df in roi_dict.items()} for layer,roi_dict in results_per_layer.items()}
-else:
-    results_per_layer = {layer:{roi:df.iloc[full_idx][['Model','Pearson','Sig']] for roi,df in roi_dict.items()} for layer,roi_dict in results_per_layer.items()}"""
-
+    results_per_layer = {layer:{roi:df[:n_models] for roi,df in roi_dict.items()} for layer,roi_dict in results_per_layer.items()}
 
 for idx, roi in enumerate(rois):
     roi_stat_df = pd.DataFrame(index=models, columns=layers)
@@ -74,6 +66,7 @@ for idx, roi in enumerate(rois):
     if not ax == LH_EarlyVis:
         ax.get_legend().remove()
     ax.set_title(roi)
+    ax.set_ylim([-0.03,0.04])
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
 
@@ -82,7 +75,7 @@ for idx, roi in enumerate(rois):
         anot = (x[1] , roi_stat_df.iloc[x[0]][x[1]])
         ax.annotate('*', anot)
 
-title = f'main_coco_brain_p_{p}.pdf'
+title = f'objtrain_imgnet_brain_p_{p}_uncorrected.jpg'
 if partial:
     title = 'partial_'+title
 plt.savefig(f'./{title}')
