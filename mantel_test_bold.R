@@ -1,8 +1,10 @@
 library("vegan")
  
 layers <- c('conv1','conv2','conv3','conv4','conv5','fc6','fc7')
-bold_path <- list.files(path="/data/movie-associations/brain_rdms/BOLD5000", pattern="*.csv", full.names=TRUE, recursive=FALSE)
-test_path <- "/data/movie-associations/rdms/segmentation/obj_trained/coco/rep_3_all"
+bold_path <- list.files(path="/data/movie-associations/brain_rdms/BOLD5000/imgnet_1916", pattern="*.csv", full.names=TRUE, recursive=FALSE)
+test_path <- "/data/movie-associations/rdms/segmentation/obj_trained/imgnet_bold"
+
+n_images = 1916
 
 for (layer in layers) {
     print(sprintf("=============== LAYER %s ===============", layer))
@@ -16,7 +18,7 @@ for (layer in layers) {
 
     for (roi_file in bold_path){
         # get roi as characters
-        filename <- sapply(strsplit(roi_file,'/'), `[`, 6)
+        filename <- sapply(strsplit(roi_file,'/'), `[`, 7)
         roi <- sapply(strsplit(filename,'_'), `[`, 1)
         print(sprintf("Working on %s region",roi))
         roi_rdm <- read.csv(roi_file, header=FALSE) # brain rdms are np. arrays, don't need to slice
@@ -31,18 +33,18 @@ for (layer in layers) {
         part_significance  <- c()
 
         for (rdm_file in rdm_path) {
-            model <- sapply(strsplit(rdm_file,'/'), `[`, 8)
+            model <- sapply(strsplit(rdm_file,'/'), `[`, 9)
             model <- sapply(strsplit(model,'_'), `[`, 1)
             print(sprintf("... %s",model))
             
             rdm <- read.csv(rdm_file)
-            mantel <- mantel(rdm[2:2001], roi_rdm)
+            mantel <- mantel(rdm[2:(n_images+1)], roi_rdm)
             
             call<-append(call,model)
             pearson<-append(pearson,mantel[3]$statistic)
             significance<-append(significance,mantel[4]$signif)
             
-            partial <- mantel.partial(rdm[2:2001],roi_rdm,random[2:2001])
+            partial <- mantel.partial(rdm[2:(n_images+1)],roi_rdm,random[2:(n_images+1)])
             
             part_call<-append(part_call,model)
             part_pearson<-append(part_pearson,partial[3]$statistic)
@@ -58,7 +60,7 @@ for (layer in layers) {
                     Sig = part_significance
                     )
         out_df = rbind(df,partial_df)
-        save_path = sprintf("/data/movie-associations/mantel_results/objtrain_coco_brain/%s",layer)
+        save_path = sprintf("/data/movie-associations/mantel_results/objtrain_bold_imgnet_brain/%s",layer)
         write.csv(out_df,sprintf("%s/%s_mantel_results.csv",save_path,roi), row.names = FALSE)
     }
 }
