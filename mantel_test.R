@@ -1,15 +1,15 @@
 library("vegan")
 
-#layers <- c('conv1','conv2','conv3','conv4','conv5','fc6','fc7')
-layers <- c('conv5')
-rdm_folder <- "/data/movie-associations/rdms/segmentation/obj_trained/imgnet/rep_3_correct_color"
-save_path <- "/data/movie-associations/mantel_results/objtrain_imgnet_lch"
+layers <- c('conv1','conv2','conv3','conv4','conv5','fc6','fc7')
+#layers <- c('conv5')
+rdm_folder <- "/data/movie-associations/rdms/blurring/sigma10_kernel31/"
+save_path <- "/data/movie-associations/mantel_results/main_imgnet_lch_blur/sigma10_kernel31"
 
 n_categories <- 256
 #n_categories <- 2000
 
-lch <- read.table("/data/movie-associations/rdms/semantic_models/lch_distance_256-imgnet.txt") #actually using bold
-#bold <- read.csv("/data/movie-associations/rdms/semantic_models/MSCOCO_BOLD5000_2000_rdm.csv")
+lch <- read.table("/data/movie-associations/rdms/semantic_models/lch_distance_256-imgnet.txt") 
+#bold <- read.csv("/data/movie-associations/rdms/semantic_models/MSCOCO_BOLD5000_2000_cosine_distance.csv")
     
 sem_model <- lch
 #sem_model <- bold[2:(n_categories+1)]
@@ -31,19 +31,23 @@ for (layer in layers) {
     part_significance  <- c()
 
     for (rdm_file in rdm_path) {
+        model <- sapply(strsplit(rdm_file,'/'), `[`, 9)
+        model <- sapply(strsplit(model,'_'), `[`, 1)
+        print(sprintf("... %s",model))
+        
         rdm <- read.csv(rdm_file)
         print(sprintf("rdm %s read in", rdm_file))
         mantel <- mantel(rdm[2:(n_categories+1)], sem_model)
         print(sprintf("mantel %s done", rdm_file))
         
-        call<-append(call,sapply(strsplit(rdm_file,'/'), `[`, 10))
+        call<-append(call,model)
         pearson<-append(pearson,mantel[3]$statistic)
         significance<-append(significance,mantel[4]$signif)
         
         partial <- mantel.partial(rdm[2:(n_categories+1)],sem_model,random[2:(n_categories+1)])
         print(sprintf("partial mantel %s done", rdm_file))
         
-        part_call<-append(part_call,sapply(strsplit(rdm_file,'/'), `[`, 10))
+        part_call<-append(part_call,model)
         part_pearson<-append(part_pearson,partial[3]$statistic)
         part_significance<-append(part_significance,partial[4]$signif)
     }
