@@ -40,12 +40,12 @@ def parse_option():
     
     parser.add_argument('--segment', type=str, default=None, choices=['rm_bg','rm_obj'], help='whether to segment the objects from bg and which to remove')
     
-    parser.add_argument('--blur', type=bool, default=None, help='if not None, this will blur the image using a Gaussian kernel with sigma and kernel defined below')
+    parser.add_argument('--blur', type=bool, default=False, help='if not None, this will blur the image using a Gaussian kernel with sigma and kernel defined below')
     parser.add_argument('--sigma', type=float, default=10.0, help='sigma size for blurring if args.blur is not None')
     parser.add_argument('--kernel_size', type=int, default=15, help='paramater for setting the gaussian kernel size if this is preferred for blurring')
 
     opt = parser.parse_args()
-
+ 
     return opt
 
 def get_color_distortion(s=1.0):
@@ -95,6 +95,14 @@ def compute_features(dataloader, model, categories, layers):
         with torch.no_grad():
             input_var.cuda()
             category = image_name[0]
+
+            if args.blur:
+                im1 = input_var[0]
+            
+                gauss = transforms.GaussianBlur(kernel_size=(args.kernel_size,args.kernel_size), sigma=(args.sigma,args.sigma))
+                input_var = gauss(input_var)
+
+                im = input_var[0]  
 
             input_var = input_var.float().cuda()
             _model_feats = []
@@ -211,11 +219,11 @@ def main(args, model_weights=''):
     if not args.supervised:
         _file = m.split('_')[0]
         _save = f'{args.save_path}/{_file}_activations.pickle'
-        if args.blur is not None:
+        if args.blur:
             _save = f'{args.save_path}/{_file}_blur__activations.pickle'
     else:
         _save = f'{args.save_path}/supervised_activations.pickle'
-        if args.blur is not None:
+        if args.blur:
             _save = f'{args.save_path}/supervised_blur_sigma{args.sigma}_kernel{args.kernel_size}_activations.pickle'
     
     with open(_save, 'wb') as handle:
