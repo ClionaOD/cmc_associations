@@ -2,7 +2,7 @@ import pickle
 import os
 import numpy as np
 
-path = '/data/movie-associations/semantic_measures/coco_bold_rdms_per-subj_per-roi.pickle'
+path = '/data/movie-associations/semantic_measures/imgnet_bold_rdms_per-subj_per-roi.pickle'
 
 with open(path,'rb') as f:
     bold_rdms = pickle.load(f)
@@ -19,9 +19,9 @@ for subj, roi_dict in bold_rdms.items():
 for roi,lst in avg_rdms.items():
     avg_rdms[roi] = np.mean(np.stack(avg_rdms[roi]),axis=0)
 
-with open('./across_subj_bold_rdms.pickle','wb') as f:
+with open('./across_subj_bold_imgnet_rdms.pickle','wb') as f:
     pickle.dump(avg_rdms,f)
 
-save_path = "/data/movie-associations/brain_rdms/BOLD5000"
+save_path = "/data/movie-associations/brain_rdms/BOLD5000/imgnet_1916"
 for roi, arr in avg_rdms.items():
     np.savetxt(f"{save_path}/{roi}_rdm_across_subj.csv", arr, delimiter=",")
