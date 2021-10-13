@@ -2,8 +2,8 @@ library("vegan")
 
 layers <- c('conv1','conv2','conv3','conv4','conv5','fc6','fc7')
 #layers <- c('conv5')
-rdm_folder <- "/data/movie-associations/rdms/blurring/sigma10_kernel31/"
-save_path <- "/data/movie-associations/mantel_results/main_imgnet_lch_blur/sigma10_kernel31"
+rdm_folder <- "/data/movie-associations/rdms/blurring/sigma10_kernel15/"
+save_path <- "/data/movie-associations/mantel_results/main_imgnet_lch_blur/sigma10_kernel15/correct_random"
 
 n_categories <- 256
 #n_categories <- 2000
@@ -19,8 +19,6 @@ for (layer in layers) {
     rdm_path <- list.files(path=sprintf("%s/%s",rdm_folder,layer), pattern="*.csv", full.names=TRUE, recursive=FALSE)
 
     print("semantic model read in")
-    random <- read.csv(sprintf("%s/%s/random_%s.csv",rdm_folder,layer,layer))
-    print("random read in")
 
     call <- c()
     pearson  <- c()
@@ -34,6 +32,17 @@ for (layer in layers) {
         model <- sapply(strsplit(rdm_file,'/'), `[`, 9)
         model <- sapply(strsplit(model,'_'), `[`, 1)
         print(sprintf("... %s",model))
+
+        if (grepl('Lab', model, fixed = TRUE)) {
+            random <- read.csv(sprintf("%s/%s/random-Lab_%s.csv",rdm_folder,layer,layer))
+            print("Lab random read in")
+        } else if (grepl('supervised', model, fixed = TRUE)) {
+            random <- read.csv(sprintf("%s/%s/random-supervised_%s.csv",rdm_folder,layer,layer))
+            print("supervised random read in")
+        } else {
+            random <- read.csv(sprintf("%s/%s/random-distort_%s.csv",rdm_folder,layer,layer))
+            print("default distort random read in")
+        }
         
         rdm <- read.csv(rdm_file)
         print(sprintf("rdm %s read in", rdm_file))
