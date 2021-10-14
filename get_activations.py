@@ -69,7 +69,7 @@ class ImageFolderWithPaths(datasets.ImageFolder):
         tuple_with_path = (original_tuple + (path,))
         return tuple_with_path
 
-def compute_features(dataloader, model, categories, layers):
+def compute_features(dataloader, model, categories, layers, args):
     print('Compute features')
     model.eval()
     
@@ -241,7 +241,7 @@ def get_activations(imgPath, model, args, mean=[(0 + 100) / 2, (-86.183 + 98.233
     layers = ['conv1', 'conv2', 'conv3', 'conv4', 'conv5', 'fc6', 'fc7']
     
     #compute the features
-    mean_activations = compute_features(dataloader, model, categories=categories, layers=layers)
+    mean_activations = compute_features(dataloader, model, categories=categories, layers=layers, args=args)
     
     return mean_activations
 
