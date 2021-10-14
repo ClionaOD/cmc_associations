@@ -2,8 +2,8 @@ library("vegan")
 
 layers <- c('conv1','conv2','conv3','conv4','conv5','fc6','fc7')
 #layers <- c('conv5')
-rdm_folder <- "/data/movie-associations/rdms/blurring/sigma10_kernel15/"
-save_path <- "/data/movie-associations/mantel_results/main_imgnet_lch_blur/sigma10_kernel15/correct_random"
+rdm_folder <- "/data/movie-associations/rdms/blurring/sigma10_kernel31"
+save_path <- "/data/movie-associations/mantel_results/main_imgnet_lch_blur/sigma10_kernel31"
 
 n_categories <- 256
 #n_categories <- 2000
@@ -29,7 +29,7 @@ for (layer in layers) {
     part_significance  <- c()
 
     for (rdm_file in rdm_path) {
-        model <- sapply(strsplit(rdm_file,'/'), `[`, 9)
+        model <- sapply(strsplit(rdm_file,'/'), `[`, 8)
         model <- sapply(strsplit(model,'_'), `[`, 1)
         print(sprintf("... %s",model))
 
