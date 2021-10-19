@@ -53,6 +53,21 @@ activations/*
 
 # exclude all rdms for now
 rdms/*
+mds/*
+mds/manual_superords/*
 
 # sample imgs no need to push
 imgs/*
+
+# results plots can stay here
+bar_figs/*
+bold_figs_obj-train/*
+
+
+# random files
+.RData
+*.out
+*.Rout
+
+# slurm scripts
+*.sh
