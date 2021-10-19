@@ -4,11 +4,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-pth = '/data/movie-associations/mantel_results/main_imgnet_lch/rep_2'
-test = 'mantel_imgnet_lch_COMPILED'
-#layers = ['conv1','conv2','conv3','conv4','conv5','fc6','fc7']
-layers = ['conv5']
-n_models = 8
+pth = '/data/movie-associations/mantel_results/main_imgnet_lch_blur/sigma10_kernel31'
+test = 'mantel_imgnet_lch'
+layers = ['conv1','conv2','conv3','conv4','conv5','fc6','fc7']
+#layers = ['conv5']
+n_models = 10
 
 obj_train = False
 
@@ -22,45 +22,53 @@ for layer in layers:
     mantel_df['Test Type'] = test_types 
 
     if obj_train:
-        renames = {f'authorLab_{layer}.csv':'authorLab', 
-                f'finetune10sec-objtrain_{layer}.csv':'finetune10sec-objtrain', 
-                f'finetune1sec-objtrain_{layer}.csv':'finetune1sec-objtrain', 
-                f'finetune5min-objtrain_{layer}.csv':'finetune5min-objtrain', 
-                f'finetune60sec-objtrain_{layer}.csv':'finetune60sec-objtrain', 
-                f'movieLab_{layer}.csv':'movieLab', 
-                f'random_{layer}.csv':'random', 
-                f'supervised_{layer}.csv':'supervised'
+        renames = {f'authorLab':'{L,ab} - Tian et al.', 
+                f'finetune10sec-objtrain':'SemanticCMC-objtrain - 10sec', 
+                f'finetune1sec-objtrain':'SemanticCMC-objtrain - 1sec', 
+                f'finetune5min-objtrain':'SemanticCMC-objtrain - 5min', 
+                f'finetune60sec-objtrain':'SemanticCMC-objtrain - 60sec', 
+                f'movieLab':'{L,ab} - movies', 
+                f'random-distort':'random-distort',
+                f'random-Lab':'random-Lab',
+                f'random-supervised':'random-supervised', 
+                f'supervised':'supervised'
             }
         order = [
-            renames[f'random_{layer}.csv'],
-            renames[f'supervised_{layer}.csv'],
-            renames[f'authorLab_{layer}.csv'],
-            renames[f'movieLab_{layer}.csv'],
-            renames[f'finetune1sec-objtrain_{layer}.csv'],
-            renames[f'finetune10sec-objtrain_{layer}.csv'],
-            renames[f'finetune60sec-objtrain_{layer}.csv'],
-            renames[f'finetune5min-objtrain_{layer}.csv']
+            renames[f'random-distort'],
+            renames[f'random-Lab'],
+            renames[f'random-supervised'],
+            renames[f'supervised'],
+            renames[f'authorLab'],
+            renames[f'movieLab'],
+            renames[f'finetune1sec-objtrain'],
+            renames[f'finetune10sec-objtrain'],
+            renames[f'finetune60sec-objtrain'],
+            renames[f'finetune5min-objtrain']
         ]
 
     else:
-        renames = {f'authorLab_{layer}.csv':'{L,ab} - Tian et al.', 
-                f'finetune10sec_{layer}.csv':'SemanticCMC - 10sec', 
-                f'finetune1sec_{layer}.csv':'SemanticCMC - 1sec', 
-                f'finetune5min_{layer}.csv':'SemanticCMC - 5min', 
-                f'finetune60sec_{layer}.csv':'SemanticCMC - 60sec', 
-                f'movieLab_{layer}.csv':'{L,ab} - movies', 
-                f'random_{layer}.csv':'random', 
-                f'supervised_{layer}.csv':'supervised'
+        renames = {f'authorLab':'{L,ab} - Tian et al.', 
+                f'finetune10sec':'SemanticCMC - 10sec', 
+                f'finetune1sec':'SemanticCMC - 1sec', 
+                f'finetune5min':'SemanticCMC - 5min', 
+                f'finetune60sec':'SemanticCMC - 60sec', 
+                f'movieLab':'{L,ab} - movies', 
+                f'random-distort':'random-distort',
+                f'random-Lab':'random-Lab',
+                f'random-supervised':'random-supervised', 
+                f'supervised':'supervised'
             }
         order = [
-            renames[f'random_{layer}.csv'],
-            renames[f'supervised_{layer}.csv'],
-            renames[f'authorLab_{layer}.csv'],
-            renames[f'movieLab_{layer}.csv'],
-            renames[f'finetune1sec_{layer}.csv'],
-            renames[f'finetune10sec_{layer}.csv'],
-            renames[f'finetune60sec_{layer}.csv'],
-            renames[f'finetune5min_{layer}.csv']
+            renames[f'random-distort'],
+            renames[f'random-Lab'],
+            renames[f'random-supervised'],
+            renames[f'supervised'],
+            renames[f'authorLab'],
+            renames[f'movieLab'],
+            renames[f'finetune1sec'],
+            renames[f'finetune10sec'],
+            renames[f'finetune60sec'],
+            renames[f'finetune5min']
         ]
 
     mantel_df['Model']=[renames[model] for model in mantel_df['Model'].to_list()]
@@ -107,6 +115,6 @@ for layer in layers:
         return ax
 
     plot(mantel_df, annotate=True)
-    fig_title = f'{test}_{layer}_barplot_publish_rep2.pdf'
-    plt.savefig(f'./bar_figs/{fig_title}',bbox_inches='tight')
+    fig_title = f'{test}_blur-sigma31_{layer}_barplot_correct_random.pdf'
+    plt.savefig(f'./bar_figs/blur/{fig_title}',bbox_inches='tight')
     plt.close()
