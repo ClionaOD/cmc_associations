@@ -49,6 +49,10 @@ def main(args, model_weights=''):
 if __name__ == '__main__':
     args = parse_option()
 
+    args.model_path = '/data/movie-associations/weights_for_eval/main'
+    args.image_path = '/data/movie-associations/defined_categs'
+    args.save_path = '/data/movie-associations/activations/defined_categs'
+
     colors = ['distort', 'Lab', 'distort'] # [-1] is distort because default but this won't be used
     model = 'random_alexnet.pth'
     sup = [False, False, True]
