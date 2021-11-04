@@ -88,8 +88,8 @@ def compute_features(dataloader, model, categories, layers, args):
     print('... working on activations ...')
     
     #choose random indices to save examples
-    save_idx = random.sample(range(len(dataloader)), k=15)
-    save_idx.append(0)
+    #save_idx = random.sample(range(len(dataloader)), k=15)
+    #save_idx.append(0)
     
     for i, input_tensor in enumerate(dataloader):  
         with torch.no_grad():
@@ -97,8 +97,8 @@ def compute_features(dataloader, model, categories, layers, args):
             input_var, label = input_tensor[0].cuda(),input_tensor[2][0]
             #TODO: check / make less specific
             category = label.split('/')[-2]
-            if i in save_idx:
-                imsave(input_var[0,:,:,:].cpu(),title=f'./imgs/rm_bg/img{i}_input.png')
+            #if i in save_idx:
+            #    imsave(input_var[0,:,:,:].cpu(),title=f'./imgs/rm_bg/img{i}_input.png')
             
             if args.segment == 'rm_bg':
                 
@@ -291,6 +291,12 @@ def main(args, model_weights=''):
 if __name__ == '__main__':
     args = parse_option()
     print('args parsed')
+
+    args.model_path = '/data/movie-associations/weights_for_eval/main'
+    args.image_path = '/data/movie-associations/defined_categs'
+    args.save_path = '/data/movie-associations/activations/defined_categs'
+
+    args.supervised = False
 
     if not args.supervised:
         models = [m for m in os.listdir(args.model_path) if '.pth' in m]
