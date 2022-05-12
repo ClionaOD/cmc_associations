@@ -2,17 +2,19 @@ library("vegan")
 
 layers <- c('conv1','conv2','conv3','conv4','conv5','fc6','fc7')
 #layers <- c('conv5')
-rdm_folder <- "/data/movie-associations/rdms/blurring/sigma10_kernel31"
-save_path <- "/data/movie-associations/mantel_results/main_imgnet_lch_blur/sigma10_kernel31"
+rdm_folder <- "/data/movie-associations/rdms/main/replic_training"
+save_path <- "/data/movie-associations/mantel_results/main_imgnet_lch/replic_training"
 
 n_categories <- 256
-#n_categories <- 2000
+# n_categories <- 2000
 
 lch <- read.table("/data/movie-associations/rdms/semantic_models/lch_distance_256-imgnet.txt") 
-#bold <- read.csv("/data/movie-associations/rdms/semantic_models/MSCOCO_BOLD5000_2000_cosine_distance.csv")
+# bold <- read.csv("/data/movie-associations/rdms/semantic_models/MSCOCO_BOLD5000_2000_cosine_distance.csv")
     
 sem_model <- lch
-#sem_model <- bold[2:(n_categories+1)]
+# sem_model <- bold[2:(n_categories+1)]
+
+sem_model <- (sem_model - min(sem_model)) / (max(sem_model) - min(sem_model))
 
 for (layer in layers) {
 
@@ -44,16 +46,27 @@ for (layer in layers) {
             print("default distort random read in")
         }
         
+        #max min normalise the random model
+        random <- random[2:(n_categories+1)]
+        random <- (random - min(random)) / (max(random) - min(random))
+
         rdm <- read.csv(rdm_file)
         print(sprintf("rdm %s read in", rdm_file))
-        mantel <- mantel(rdm[2:(n_categories+1)], sem_model)
+
+        # do max/min normalisation for the RDMs
+        rdm <- rdm[2:(n_categories+1)]
+        rdm <- (rdm - min(rdm)) / (max(rdm) - min(rdm))
+
+        #mantel <- mantel(rdm[2:(n_categories+1)], sem_model)
+        mantel <- mantel(rdm, sem_model)
         print(sprintf("mantel %s done", rdm_file))
         
         call<-append(call,model)
         pearson<-append(pearson,mantel[3]$statistic)
         significance<-append(significance,mantel[4]$signif)
         
-        partial <- mantel.partial(rdm[2:(n_categories+1)],sem_model,random[2:(n_categories+1)])
+        #partial <- mantel.partial(rdm[2:(n_categories+1)],sem_model,random[2:(n_categories+1)])
+        partial <- mantel.partial(rdm,sem_model,random)
         print(sprintf("partial mantel %s done", rdm_file))
         
         part_call<-append(part_call,model)
@@ -73,3 +86,5 @@ for (layer in layers) {
     out_df = rbind(df,partial_df)
     write.csv(out_df,sprintf("%s/mantel_imgnet_lch_%s.csv", save_path, layer), row.names = FALSE)
 }
+
+quit()
