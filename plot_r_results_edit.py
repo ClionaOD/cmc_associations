@@ -8,18 +8,18 @@ pth = '/data/movie-associations/mantel_results/main_imgnet_lch/replic_training/'
 test = 'mantel_imgnet_lch'
 #layers = ['conv1','conv2','conv3','conv4','conv5','fc6','fc7']
 layers = ['conv5']
-n_models = 8
+n_models = 10
 
 obj_train = False
 
 for layer in layers:
     results_path = f"{pth}/{test}_{layer}.csv"
 
-    test_types = ['Correlation with LCH' for i in range(n_models)]
-    test_types.extend(['Correlation with LCH (controlling random)' for i in range(n_models)])
+    # test_types = ['Correlation with LCH' for i in range(n_models)]
+    # test_types.extend(['Correlation with LCH (controlling random)' for i in range(n_models)])
 
     mantel_df = pd.read_csv(results_path)
-    mantel_df['Test Type'] = test_types 
+    mantel_df = mantel_df[n_models:]
 
     if obj_train:
         renames = {f'authorLab':'{L,ab} - Tian et al.', 
@@ -38,8 +38,8 @@ for layer in layers:
             renames[f'random-Lab'],
             renames[f'random-supervised'],
             renames[f'supervised'],
-            renames[f'authorLab'],
-            renames[f'movieLab'],
+            # renames[f'authorLab'],
+            # renames[f'movieLab'],
             renames[f'finetune1sec-objtrain'],
             renames[f'finetune10sec-objtrain'],
             renames[f'finetune60sec-objtrain'],
@@ -47,12 +47,12 @@ for layer in layers:
         ]
 
     else:
-        renames = {f'authorLab':'{L,ab} - Tian et al.', 
-                f'finetune10sec':'SemanticCMC - 10sec', 
-                f'finetune1sec':'SemanticCMC - 1sec', 
-                f'finetune5min':'SemanticCMC - 5min', 
-                f'finetune60sec':'SemanticCMC - 60sec', 
-                f'movieLab':'{L,ab} - movies', 
+        renames = {f'authorLab':'Baseline (imagenet)', 
+                f'finetune10sec':'Lag 10sec', 
+                f'finetune1sec':'Lag 1sec', 
+                f'finetune5min':'Lag 5min', 
+                f'finetune60sec':'Lag 60sec', 
+                f'movieLab':'Baseline (movies)', 
                 f'random-distort':'random-distort',
                 f'random-Lab':'random-Lab',
                 f'random-supervised':'random-supervised', 
@@ -63,8 +63,8 @@ for layer in layers:
             renames[f'random-Lab'],
             renames[f'random-supervised'],
             renames[f'supervised'],
-            renames[f'authorLab'],
-            renames[f'movieLab'],
+            # renames[f'authorLab'],
+            # renames[f'movieLab'],
             renames[f'finetune1sec'],
             renames[f'finetune10sec'],
             renames[f'finetune60sec'],
@@ -73,21 +73,25 @@ for layer in layers:
 
     mantel_df['Model']=[renames[model] for model in mantel_df['Model'].to_list()]
     mantel_df = mantel_df.set_index('Model')
-    mantel_df = pd.concat([mantel_df[:n_models].reindex(order),mantel_df[n_models:].reindex(order)]).reset_index()
-
+    #mantel_df = pd.concat([mantel_df[:n_models].reindex(order),mantel_df[n_models:].reindex(order)]).reset_index()
+    mantel_df = mantel_df.reindex(order)
+    mantel_df = mantel_df.iloc[4:].reset_index()
+    print(mantel_df)
+    
     def plot(data, annotate=False):
         ax = sns.catplot(
             data=data,
             kind='bar',
             x='Model',
             y='Pearson',
-            hue='Test Type',
+            color='orangered',
+            # hue='Test Type',
             legend_out=False
         )
 
         sns.set_style('whitegrid')
         ax.despine(left=True, bottom=True)
-        ax.set_axis_labels("", "Mantel test statistic r (Pearson)")
+        ax.set_axis_labels("", "Coding of semantic relations")
         ax.set_xticklabels(rotation=45, horizontalalignment='right')
         ax.set(ylim=(-0.08,0.4)) #vals set from max and min of all results
 
@@ -115,6 +119,7 @@ for layer in layers:
         return ax
 
     plot(mantel_df, annotate=True)
-    fig_title = f'{test}_{layer}_blur15_barplot_normalised.pdf'
-    plt.savefig(f'./bar_figs/normalised/{fig_title}',bbox_inches='tight')
-    plt.close()
+    fig_title = f'{test}_{layer}_barplot_succinct.pdf'
+    plt.savefig(f'./bar_figs/edits/{fig_title}',bbox_inches='tight')
+    # plt.show()
+    # plt.close()
