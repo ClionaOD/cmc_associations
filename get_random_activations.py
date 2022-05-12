@@ -28,7 +28,10 @@ def main(args, model_weights=''):
     model.cuda()
 
     if not args.supervised:
-        activations = get_activations(args.image_path, model, args)
+        if args.dataset == 'mscoco':
+            activations = get_activations(args.image_path, model, args, mean=[0.4240,0.4082,0.3853], std=[0.2788, 0.2748, 0.2759])
+        else:
+            activations = get_activations(args.image_path, model, args)
     else:
         activations = get_activations(args.image_path, model, args, mean=[0.485,0.456,0.406], std=[0.229, 0.224, 0.225])
 
@@ -49,9 +52,11 @@ def main(args, model_weights=''):
 if __name__ == '__main__':
     args = parse_option()
 
-    args.model_path = '/data/movie-associations/weights_for_eval/main'
-    args.image_path = '/data/movie-associations/defined_categs'
-    args.save_path = '/data/movie-associations/activations/defined_categs'
+    # args.model_path = '/data/movie-associations/weights_for_eval/main_replic'
+    # args.image_path = '/data/movie-associations/imagenet_cmc_256/to_test'
+    # args.save_path = '/data/movie-associations/activations/main/replic_training'
+
+    # args.dataset = 'imagenet'
 
     colors = ['distort', 'Lab', 'distort'] # [-1] is distort because default but this won't be used
     model = 'random_alexnet.pth'

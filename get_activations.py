@@ -1,5 +1,6 @@
 import argparse
 import pickle
+import natsort
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -7,6 +8,7 @@ import sys
 import random
 import math
 import unittest
+import natsort
 from numpy.lib.arraysetops import in1d
 from numpy.lib.npyio import save
 
@@ -14,13 +16,14 @@ import torch
 import torch.fft #for fourier
 import torch.nn as nn
 from torch.nn.modules import activation
-import torch.utils.data
+import torch.utils.data as data
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from torchvision.models import alexnet
 
 from dataset import RGB2Lab
 from models.alexnet import TemporalAlexNetCMC
+from models.resnet import TemporalResnetCMC
 from PIL import Image
 from segmentation import segment_vals, segment_with_fourier
 
@@ -33,7 +36,11 @@ def parse_option():
     parser.add_argument('--image_path', type=str, help='path to images for activation analysis')
    
     parser.add_argument('--transform', type=str, default='distort', choices=['Lab','distort'], help='color transform to use')
-   
+    parser.add_argument('--dataset', type=str, default='imagenet', choices=['imagenet','mscoco','bg_challenge'], help='what dataset using, important for mean/std of transform')
+    
+    parser.add_argument('--model', type=str, default='alexnet', choices=['alexnet',
+                                                                         'resnet50'])
+
     parser.add_argument('--supervised', type=bool, default=False, help='whether to test against supervised AlexNet')
    
     parser.add_argument('--segment', type=str, default=None, choices=['rm_bg','rm_obj'], help='whether to segment the objects from bg and which to remove')
@@ -69,7 +76,23 @@ class ImageFolderWithPaths(datasets.ImageFolder):
         tuple_with_path = (original_tuple + (path,))
         return tuple_with_path
 
-def compute_features(dataloader, model, categories, layers, args):
+class NoClassDataSet(data.Dataset):
+    def __init__(self, main_dir, transform):
+        self.main_dir = main_dir
+        self.transform = transform
+        all_imgs = os.listdir(main_dir)
+        self.total_imgs = natsort.natsorted(all_imgs)
+
+    def __len__(self):
+        return len(self.total_imgs)
+
+    def __getitem__(self, idx):
+        img_loc = os.path.join(self.main_dir, self.total_imgs[idx])
+        image = Image.open(img_loc).convert("RGB")
+        tensor_image = self.transform(image)
+        return tensor_image, self.total_imgs[idx], img_loc
+
+def compute_features(dataloader, model, categories, layers, args, n_images):
     print('Compute features')
     model.eval()
     
@@ -83,7 +106,7 @@ def compute_features(dataloader, model, categories, layers, args):
     
     activations = {categ:{l:[] for l in layers} for categ in categories}
     #categ is the n0XXX imagenet class - n_categs = 256 (len activations = 256)
-    #l is the layer ('conv1' etc.) - running avg of acts, sum with each then divide by 150 (150 imgs per class)
+    #l is the layer ('conv1' etc.) - running avg of acts, sum with each then divide by n_images per class)
 
     print('... working on activations ...')
     
@@ -95,8 +118,10 @@ def compute_features(dataloader, model, categories, layers, args):
         with torch.no_grad():
             
             input_var, label = input_tensor[0].cuda(),input_tensor[2][0]
-            #TODO: check / make less specific
-            category = label.split('/')[-2]
+            if args.dataset == 'mscoco':
+                category = label.split('/')[-1]
+            else:
+                category = label.split('/')[-2]
             #if i in save_idx:
             #    imsave(input_var[0,:,:,:].cpu(),title=f'./imgs/rm_bg/img{i}_input.png')
             
@@ -113,9 +138,9 @@ def compute_features(dataloader, model, categories, layers, args):
                 
                 input_var = input_var.unsqueeze(0)
                 
-                if i in save_idx:
-                    imsave(input_var[0,:,:,:],title=f'./imgs/rm_bg/img{i}_segmented.png')
-                    imsave(scramb,title=f'./imgs/rm_bg/img{i}_scrambled.png')
+                #if i in save_idx:
+                    #imsave(input_var[0,:,:,:],title=f'./imgs/rm_bg/img{i}_segmented.png')
+                    #imsave(scramb,title=f'./imgs/rm_bg/img{i}_scrambled.png')
             
             elif args.segment == 'rm_obj':
                 input_var, scramb = segment_with_fourier(
@@ -147,8 +172,7 @@ def compute_features(dataloader, model, categories, layers, args):
     print('... getting mean ...')
     for categ in categories:
         for layer in layers:
-            activations[categ][layer] = (activations[categ][layer] / 150)
-            #150 is because there are 256 * 150 images in the test set, need to make an argument
+            activations[categ][layer] = (activations[categ][layer] / n_images)
             #remove first dimension for batch size
 
     return activations
@@ -224,24 +248,40 @@ def get_activations(imgPath, model, args, mean=[(0 + 100) / 2, (-86.183 + 98.233
             ])
     
     #load the data
-    dataset = ImageFolderWithPaths(imgPath, transform=train_transform)
+    if args.dataset == 'mscoco':
+        dataset = NoClassDataSet(imgPath, transform=train_transform)
+    else:
+        dataset = ImageFolderWithPaths(imgPath, transform=train_transform)
     
     dataloader = torch.utils.data.DataLoader(dataset,
                                             batch_size=1,
                                             num_workers=0,
                                             pin_memory=True,
                                             shuffle = False)
-    
-    #TODO: check/make less specific
-    categories = []
-    for d in os.listdir(args.image_path):
-        if os.path.isdir(f'{args.image_path}/{d}'):
-            categories.append(d)
+    if args.dataset == 'mscoco':
+        images =  os.listdir(args.image_path)
 
-    layers = ['conv1', 'conv2', 'conv3', 'conv4', 'conv5', 'fc6', 'fc7']
-    
-    #compute the features
-    mean_activations = compute_features(dataloader, model, categories=categories, layers=layers, args=args)
+        layers = ['conv1', 'conv2', 'conv3', 'conv4', 'conv5', 'fc6', 'fc7']
+        
+        #compute the features
+        mean_activations = compute_features(dataloader, model, categories=images, layers=layers, args=args)
+    else:
+        #TODO: check/make less specific
+        categories = []
+        for d in os.listdir(args.image_path):
+            if os.path.isdir(f'{args.image_path}/{d}'):
+                categories.append(d)
+
+        if args.model == 'alexnet':
+            layers = ['conv1', 'conv2', 'conv3', 'conv4', 'conv5', 'fc6', 'fc7']
+        elif args.model == 'resnet50':
+            layers = ['conv1','bn1','relu','maxpool','layer1','layer2','layer3','layer4']
+        
+        # check how many images per category to average across
+        n_images = len(os.listdir(f'{args.image_path}/{categories[0]}'))
+
+        #compute the features
+        mean_activations = compute_features(dataloader, model, categories=categories, layers=layers, args=args, n_images=n_images)
     
     return mean_activations
 
@@ -255,17 +295,25 @@ def main(args, model_weights=''):
 
         if 'lab' in modelpth.lower():
             args.transform = 'Lab'
-
-        if 'finetune' in modelpth:
+        
+        if 'finetune' in modelpth or 'resnet' in modelpth:
             checkpoint = torch.load(modelpth)['model']
         else:
             checkpoint = torch.load(modelpth)
 
-        model = TemporalAlexNetCMC()
+        if args.model == 'alexnet':
+            model = TemporalAlexNetCMC()
+        elif args.model.startswith('resnet'):
+            model = TemporalResnetCMC()
+        
+        
         model.load_state_dict(checkpoint)
         model.cuda()
 
-        activations = get_activations(args.image_path, model, args)
+        if args.dataset == 'mscoco':
+            activations = get_activations(args.image_path, model, args, mean=[0.4240,0.4082,0.3853], std=[0.2788, 0.2748, 0.2759])
+        else:
+            activations = get_activations(args.image_path, model, args)
     else:
         print('supervised')
         model = alexnet(pretrained=True)
@@ -292,14 +340,18 @@ if __name__ == '__main__':
     args = parse_option()
     print('args parsed')
 
-    args.model_path = '/data/movie-associations/weights_for_eval/main'
-    args.image_path = '/data/movie-associations/defined_categs'
-    args.save_path = '/data/movie-associations/activations/defined_categs'
+    # args.model_path = '/data/movie-associations/weights_for_eval/main'
+    # args.image_path = '/data/movie-associations/bg_challenge/original/val'
+    # args.save_path = '/data/movie-associations/activations/bg_challenge/original'
 
-    args.supervised = False
+    # args.model = 'alexnet'
+
+    # args.dataset = 'bg_challenge'
+
+    # args.supervised = False
 
     if not args.supervised:
-        models = [m for m in os.listdir(args.model_path) if '.pth' in m]
+        models = [m for m in os.listdir(args.model_path) if '.pth' in m and not 'random' in m]
         for m in models:
             main(args,m)
     else:
