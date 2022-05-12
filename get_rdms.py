@@ -48,44 +48,51 @@ def construct_rdm(activation_df):
     Takes a df with columns=classes, series=mean activations and returns the data as an n*n rdm dataframe
     activation_df: a df with columns=classes)
     """
-    rdm = ssd.pdist(activation_df.values.T, metric='cosine')
+    rdm = ssd.pdist(activation_df.values.T, metric='euclidean')
     rdm = ssd.squareform(rdm)
     rdm = pd.DataFrame(rdm, columns=activation_df.columns, index=activation_df.columns)
     return rdm
 
 def main(args):
-    for a in os.listdir(args.activation_path):
-        if not os.path.isdir(f'{args.activation_path}/{a}'):
-            with open(f'{args.activation_path}/{a}', 'rb') as f:
-                acts = pickle.load(f)
-            
-            activation_dfs = construct_activation_df(acts)
-            rdm_dict = {k:construct_rdm(v) for k,v in activation_dfs.items()}
+    for a in [i for i in os.listdir(args.activation_path) if '.pickle' in i]:
+        
+        with open(f'{args.activation_path}/{a}', 'rb') as f:
+            acts = pickle.load(f)
+        
+        activation_dfs = construct_activation_df(acts)
+        rdm_dict = {k:construct_rdm(v) for k,v in activation_dfs.items()}
 
-            if args.save_rdm:
-                _act_type = args.activation_path.split('/')[-1]
-                _rdm_save_path = f'{args.rdm_path}/{_act_type}'
-                if not os.path.isdir(_rdm_save_path):
-                    os.makedirs(_rdm_save_path)
-                _save = a.split('_')[0]
-                with open(f'{_rdm_save_path}/{_save}_rdms.pickle','wb') as f:
-                    pickle.dump(rdm_dict,f)
-                
-                if type(args.single_layer) == list:
-                    for layer in args.single_layer:
-                        if not os.path.isdir(f'{_rdm_save_path}/{layer}/'):
-                            os.makedirs(f'{_rdm_save_path}/{layer}/')
-                        rdm_dict[layer].to_csv(f'{_rdm_save_path}/{layer}/{_save}_{layer}.csv')
-                elif type(args.single_layer) == str:
-                    layer = args.single_layer
+        if args.save_rdm:
+            _act_type = args.activation_path.split('/')[-1]
+            _rdm_save_path = f'{args.rdm_path}/{_act_type}'
+            if not os.path.isdir(_rdm_save_path):
+                os.makedirs(_rdm_save_path)
+            _save = a.split('_')[0]
+            with open(f'{_rdm_save_path}/{_save}_rdms.pickle','wb') as f:
+                pickle.dump(rdm_dict,f)
+            
+            if type(args.single_layer) == list:
+                for layer in args.single_layer:
                     if not os.path.isdir(f'{_rdm_save_path}/{layer}/'):
                         os.makedirs(f'{_rdm_save_path}/{layer}/')
                     rdm_dict[layer].to_csv(f'{_rdm_save_path}/{layer}/{_save}_{layer}.csv')
-                else:
-                    pass
+            elif type(args.single_layer) == str:
+                layer = args.single_layer
+                if not os.path.isdir(f'{_rdm_save_path}/{layer}/'):
+                    os.makedirs(f'{_rdm_save_path}/{layer}/')
+                rdm_dict[layer].to_csv(f'{_rdm_save_path}/{layer}/{_save}_{layer}.csv')
+            else:
+                pass
 
 if __name__ == "__main__":
     args = parse_option()
+
+    in_9_type = 'mixed_same'
+    
+    args.image_path = f'/data/movie-associations/bg_challenge/{in_9_type}/val'
+    args.activation_path = f'/data/movie-associations/activations/bg_challenge/main/{in_9_type}'
+    args.rdm_path = '/data/movie-associations/rdms/bg_challenge'
+    
     args.single_layer = ['conv1','conv2','conv3','conv4','conv5','fc6','fc7']
     #args.single_layer = 'conv5'
 
