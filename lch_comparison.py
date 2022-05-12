@@ -26,6 +26,9 @@ def parse_option():
 def calculate_lch(args):
     wnids = os.listdir(args.image_path)
     
+    # manual override for in_9
+    wnids = ['n02084071','n01503061','n01661091','n04576211','n02075296','n02159955','n03800933','n02469914','n02512053']
+
     synsets = []
     for wnid in wnids:
         pos = wnid[0]
@@ -91,50 +94,51 @@ if __name__ == "__main__":
     args = parse_option()
 
     #### working code for testing ####
-    with open('img_labels.pickle','rb') as f:
-        labels = pickle.load(f)
+    # with open('img_labels.pickle','rb') as f:
+    #     labels = pickle.load(f)
 
-    categs = pd.read_csv('./coco_labels.csv', header=None)
+    # categs = pd.read_csv('./imagenet9_labels.csv', header=None)
 
-    synonyms= {
-        'stop_sign':'signpost',
-        'eye_glasses':'spectacles',
-        'sports_ball':'ball',
-        'wine_glass':'wineglass',
-        'potted_plant':'flowerpot',
-        'hair_brush':'brush'
-    }
+    # synonyms= {
+    #     'stop_sign':'signpost',
+    #     'eye_glasses':'spectacles',
+    #     'sports_ball':'ball',
+    #     'wine_glass':'wineglass',
+    #     'potted_plant':'flowerpot',
+    #     'hair_brush':'brush'
+    # }
 
-    defs = []
-    synset = []
-    for word in categs[0].to_list():
-        if ' ' in word:
-            word=word.replace(' ','_')
-        syns = wn.synsets(word)
-        if not len(syns) == 0:
-            defs.append(syns[0].definition())
-            synset.append(syns[0])
-        else:
-            word = synonyms[word]
-            defs.append(wn.synsets(word)[0].definition())
-            synset.append(wn.synsets(word)[0])
-            print(word)
-    categs['defs'] = defs
-    categs['syns'] = synset
+    # defs = []
+    # synset = []
+    # for word in categs[0].to_list():
+    #     if ' ' in word:
+    #         word=word.replace(' ','_')
+    #     syns = wn.synsets(word)
+    #     if not len(syns) == 0:
+    #         defs.append(syns[0].definition())
+    #         synset.append(syns[0])
+    #     else:
+    #         word = synonyms[word]
+    #         defs.append(wn.synsets(word)[0].definition())
+    #         synset.append(wn.synsets(word)[0])
+    #         print(word)
+    # categs['defs'] = defs
+    # categs['syns'] = synset
 
-    categs.to_csv('./wn_defs.csv')
-    all = []
-    for img, lst in labels.items():
-        syns = [wn.synsets(word) for word in lst]
-        syns = [[j for j in i if j.pos()=='n'] for i in syns]
-        all.append(syns)
+    # categs.to_csv('./wn_defs.csv')
+    # all = []
+    # for img, lst in labels.items():
+    #     syns = [wn.synsets(word) for word in lst]
+    #     syns = [[j for j in i if j.pos()=='n'] for i in syns]
+    #     all.append(syns)
 
-    unique = [[item for sublst in sub for item in sublst] for sub in all]
-    unique = list(set([item for sublst in unique for item in sublst]))
-    non_one = [syn for syn in unique if not str(syn)[-3]=='1']
-    for syn in non_one:
-        print(f"{syn}: \t {syn.definition()}")
-    print(unique)
+    # unique = [[item for sublst in sub for item in sublst] for sub in all]
+    # unique = list(set([item for sublst in unique for item in sublst]))
+    # non_one = [syn for syn in unique if not str(syn)[-3]=='1']
+    # for syn in non_one:
+    #     print(f"{syn}: \t {syn.definition()}")
+    # print(unique)
 
     ########
+    args.image_path = '/data/movie-associations/bg_challenge/original/val/'
     main(args) 
