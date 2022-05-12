@@ -1,6 +1,27 @@
+import os
 import torch
+import natsort
 import torchvision.transforms as transforms
+from torch.utils.data import Dataset
+from PIL import Image
 from get_activations import get_color_distortion, ImageFolderWithPaths
+
+class CustomDataSet(Dataset):
+    def __init__(self, main_dir, transform):
+        self.main_dir = main_dir
+        self.transform = transform
+        all_imgs = os.listdir(main_dir)
+        self.total_imgs = natsort.natsorted(all_imgs)
+
+    def __len__(self):
+        return len(self.total_imgs)
+
+    def __getitem__(self, idx):
+        img_loc = os.path.join(self.main_dir, self.total_imgs[idx])
+        image = Image.open(img_loc).convert("RGB")
+        tensor_image = self.transform(image)
+        # OG returns image, target, path so just setting target to be blank as there is no class directory
+        return (tensor_image, '', img_loc)
 
 def online_mean_and_sd(loader):
     """Compute the mean and sd in an online fashion
@@ -24,7 +45,7 @@ def online_mean_and_sd(loader):
 
     return fst_moment, torch.sqrt(snd_moment - fst_moment ** 2)
 
-def load_data(imgPath):
+def load_data(imgPath,subdirs=False):
     color_transfer = get_color_distortion()
 
     train_transform = transforms.Compose([
@@ -35,7 +56,11 @@ def load_data(imgPath):
         ])
         
     #load the data
-    dataset = ImageFolderWithPaths(imgPath, transform=train_transform)
+    if subdirs:
+        dataset = ImageFolderWithPaths(imgPath, transform=train_transform)
+    else:
+        dataset = CustomDataSet(imgPath, transform=train_transform)
+
     dataloader = torch.utils.data.DataLoader(dataset,
                                             batch_size=64,
                                             num_workers=0,
@@ -44,7 +69,7 @@ def load_data(imgPath):
     return dataloader
 
 if __name__ == '__main__':
-    imgPath = '/data/imagenet_cmc/to_test'
+    imgPath = '/data/movie-associations/MSCOCO_BOLD5000_2000'
 
     loader = load_data(imgPath)
 
