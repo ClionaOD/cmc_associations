@@ -49,6 +49,8 @@ def parse_option():
     parser.add_argument('--sigma', type=float, default=10.0, help='sigma size for blurring if args.blur is not None')
     parser.add_argument('--kernel_size', type=int, default=15, help='paramater for setting the gaussian kernel size if this is preferred for blurring')
 
+    parser.add_argument('--exemplar_bootstrapping', type=bool, defualt=False, help='will sample with replacement in feature computation if set to True')
+
     opt = parser.parse_args()
 
     return opt
@@ -206,6 +208,9 @@ def get_activations(imgPath, model, args, mean=[(0 + 100) / 2, (-86.183 + 98.233
     std = std
     normalize = transforms.Normalize(mean=mean, std=std)
     gauss = transforms.GaussianBlur(kernel_size=(args.kernel_size,args.kernel_size), sigma=(args.sigma,args.sigma))
+
+    # check how many images per category to average across
+    n_images = len(os.listdir(f'{args.image_path}/{categories[0]}'))
     
     if not args.supervised:   
         if args.transform == 'Lab':
@@ -252,12 +257,18 @@ def get_activations(imgPath, model, args, mean=[(0 + 100) / 2, (-86.183 + 98.233
         dataset = NoClassDataSet(imgPath, transform=train_transform)
     else:
         dataset = ImageFolderWithPaths(imgPath, transform=train_transform)
+
+    if args.exemplar_bootstrapping:
+        sampler = data.RandomSampler(dataset, replacement=True, num_samples=n_images)
+    else:
+        sampler = None
     
     dataloader = torch.utils.data.DataLoader(dataset,
                                             batch_size=1,
                                             num_workers=0,
                                             pin_memory=True,
-                                            shuffle = False)
+                                            shuffle = False,
+                                            sampler = sampler)
     if args.dataset == 'mscoco':
         images =  os.listdir(args.image_path)
 
@@ -276,14 +287,11 @@ def get_activations(imgPath, model, args, mean=[(0 + 100) / 2, (-86.183 + 98.233
             layers = ['conv1', 'conv2', 'conv3', 'conv4', 'conv5', 'fc6', 'fc7']
         elif args.model == 'resnet50':
             layers = ['conv1','bn1','relu','maxpool','layer1','layer2','layer3','layer4']
-        
-        # check how many images per category to average across
-        n_images = len(os.listdir(f'{args.image_path}/{categories[0]}'))
 
         #compute the features
         mean_activations = compute_features(dataloader, model, categories=categories, layers=layers, args=args, n_images=n_images)
     
-    return mean_activations
+        return mean_activations
 
 def main(args, model_weights=''):
     modelpth = os.path.join(args.model_path, model_weights)
@@ -313,13 +321,13 @@ def main(args, model_weights=''):
         if args.dataset == 'mscoco':
             activations = get_activations(args.image_path, model, args, mean=[0.4240,0.4082,0.3853], std=[0.2788, 0.2748, 0.2759])
         else:
-            activations = get_activations(args.image_path, model, args)
+            activations = get_activations(args.image_path, model, args, mean=[0.4493,0.4348,0.3970], std=[0.3030, 0.3001, 0.3016])
     else:
         print('supervised')
         model = alexnet(pretrained=True)
         model.cuda()
 
-        activations = get_activations(args.image_path, model, args, mean=[0.485,0.456,0.406], std=[0.229, 0.224, 0.225])
+        activations = get_activations(args.image_path, model, args)
 
     print('done ... saving')
 
@@ -340,14 +348,15 @@ if __name__ == '__main__':
     args = parse_option()
     print('args parsed')
 
-    # args.model_path = '/data/movie-associations/weights_for_eval/main'
+    # args.model_path = '/data/movie-associations/weights_for_eval/main_replic'
     # args.image_path = '/data/movie-associations/bg_challenge/original/val'
-    # args.save_path = '/data/movie-associations/activations/bg_challenge/original'
+    # args.save_path = '/data/movie-associations/activations/bg_challenge/replic_training/original'
 
     # args.model = 'alexnet'
 
     # args.dataset = 'bg_challenge'
 
+    # # args.supervised = True
     # args.supervised = False
 
     if not args.supervised:
