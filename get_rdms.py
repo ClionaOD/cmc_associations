@@ -87,13 +87,16 @@ def main(args):
 if __name__ == "__main__":
     args = parse_option()
 
-    in_9_type = 'mixed_same'
+    # in_9_type = 'original'
     
-    args.image_path = f'/data/movie-associations/bg_challenge/{in_9_type}/val'
-    args.activation_path = f'/data/movie-associations/activations/bg_challenge/main/{in_9_type}'
-    args.rdm_path = '/data/movie-associations/rdms/bg_challenge'
+    training = 'main'
     
-    args.single_layer = ['conv1','conv2','conv3','conv4','conv5','fc6','fc7']
-    #args.single_layer = 'conv5'
+    for in_9_type in ['original','only_bg_t','mixed_rand','mixed_same']:
+        args.image_path = f'/data/movie-associations/bg_challenge/{in_9_type}/val'
+        args.activation_path = f'/data/movie-associations/activations/bg_challenge/{training}/{in_9_type}'
+        args.rdm_path = f'/data/movie-associations/rdms/bg_challenge/{training}'
+        
+        args.single_layer = ['conv1','conv2','conv3','conv4','conv5','fc6','fc7']
+        #args.single_layer = 'conv5'
 
-    main(args)
+        main(args)
