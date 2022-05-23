@@ -1,0 +1,29 @@
+Pearson,IN-9 Type,Model,Sig
+-0.055730292,only background,CMC (ImageNet),0.866
+0.074334822,only background,CMC (movies),0.794
+0.080701877,only background,Supervised (ImageNet),0.734
+0.330167399,only background,Temporal 1 s (movies),0.106
+0.851231401,only background,Temporal 10 s (movies),0.001
+0.398924345,only background,Temporal 60 s (movies),0.03
+0.591178523,only background,Temporal 5 min (movies),0.006
+0.377287905,mixed rand,CMC (ImageNet),0.053
+0.132046813,mixed rand,CMC (movies),0.618
+0.906128577,mixed rand,Supervised (ImageNet),0.001
+0.191275214,mixed rand,Temporal 1 s (movies),0.482
+0.246804205,mixed rand,Temporal 10 s (movies),0.288
+0.111492564,mixed rand,Temporal 60 s (movies),0.591
+0.817406259,mixed rand,Temporal 5 min (movies),0.001
+0.014236591,mixed same,CMC (ImageNet),0.957
+0.161669439,mixed same,CMC (movies),0.55
+0.972528617,mixed same,Supervised (ImageNet),0.001
+0.60782379,mixed same,Temporal 1 s (movies),0.004
+0.829387639,mixed same,Temporal 10 s (movies),0.001
+0.641809628,mixed same,Temporal 60 s (movies),0.001
+0.674776694,mixed same,Temporal 5 min (movies),0.002
+0.328044206,random vs same,CMC (ImageNet),0.093
+0.312659207,random vs same,CMC (movies),0.24
+0.906204157,random vs same,Supervised (ImageNet),0.001
+0.208908189,random vs same,Temporal 1 s (movies),0.228
+0.544499314,random vs same,Temporal 10 s (movies),0.058
+-0.002773522,random vs same,Temporal 60 s (movies),0.986
+0.643072678,random vs same,Temporal 5 min (movies),0.007
