@@ -21,7 +21,7 @@ def parse_option():
 
     return opt
 
-def construct_activation_df(activations):
+def construct_activation_df(activations, meaned=False):
     """
     Returns the activations structured as a dict with {layer:pd.DataFrame(columns=classes)}
     activations: a dict of activations in response to numerous images. structured as {synset:{layers:}}
@@ -35,10 +35,16 @@ def construct_activation_df(activations):
         for idx, l in enumerate(layers):
             _activationArray = v[l] #use indexing because blurred images saved first batch size index
             if idx <= 4:
-                s = pd.Series(np.mean(_activationArray[0,:,:,:], axis=(1,2)))
+                if meaned:
+                    s = pd.Series(np.mean(_activationArray[:,:,:], axis=(1,2)))
+                else:
+                    s = pd.Series(np.mean(_activationArray[0,:,:,:], axis=(1,2)))
                 activation_df[l][k] = s
             else:
-                s = pd.Series(_activationArray[0,:])
+                if meaned:
+                    s = pd.Series(_activationArray[:])
+                else:
+                    s = pd.Series(_activationArray[0,:])
                 activation_df[l][k] = s
     
     return activation_df
@@ -96,7 +102,7 @@ if __name__ == "__main__":
         args.activation_path = f'/data/movie-associations/activations/bg_challenge/{training}/{in_9_type}'
         args.rdm_path = f'/data/movie-associations/rdms/bg_challenge/{training}'
         
-        args.single_layer = ['conv1','conv2','conv3','conv4','conv5','fc6','fc7']
-        #args.single_layer = 'conv5'
+        #args.single_layer = ['conv1','conv2','conv3','conv4','conv5','fc6','fc7']
+        args.single_layer = 'conv5'
 
         main(args)
