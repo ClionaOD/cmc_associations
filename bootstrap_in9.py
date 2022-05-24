@@ -1,6 +1,3 @@
-
-
-
 import os
 import pickle
 import numpy as np
@@ -87,7 +84,7 @@ def main(args, in9_types, model_name='', n_bootstraps=1000, chosen_layers=['conv
             
             Path(os.path.join(args.save_path,training,in9_type,'all')).mkdir(parents=True, exist_ok=True)
             with open(type_act_path,'wb') as f:
-                pickle.dump(og_activations,f)
+                pickle.dump(activations,f)
             
             del activations
         
@@ -95,8 +92,7 @@ def main(args, in9_types, model_name='', n_bootstraps=1000, chosen_layers=['conv
     mr_activations = pd.read_pickle(os.path.join(args.save_path,training,'mixed_rand','all',f'{_modelp}_activations.pickle'))
     onlybg_activations = pd.read_pickle(os.path.join(args.save_path,training,'only_bg_t','all',f'{_modelp}_activations.pickle'))
         
-
-    all_results = {k:[[],[]] for k in chosen_layers}
+    all_results = {k:[[],[],[]] for k in chosen_layers}
     
     for layer in chosen_layers:
         for B in range(n_bootstraps):
@@ -112,11 +108,16 @@ def main(args, in9_types, model_name='', n_bootstraps=1000, chosen_layers=['conv
             # r(original, only_bg_t)
             corr_coef_ogonlybg, p_val = pearsonr(squareform(rdm_dict_og[layer]), squareform(rdm_dict_onlybg[layer]))
 
+            # r(original,original) - baseline
+            corr_coef_ogog, p_val = pearsonr(squareform(rdm_dict_og[layer]), squareform(rdm_dict_og[layer]))
+            
             all_results[layer][0].append(corr_coef_ogmr)
             all_results[layer][1].append(corr_coef_ogonlybg)
+            all_results[layer][2].append(corr_coef_ogog)
     
     results_og_mr = {layer:np.array(results[0]) for layer,results in all_results.items()}
     results_og_onlybg = {layer:np.array(results[1]) for layer,results in all_results.items()}
+    results_og_og = {layer:np.array(results[2]) for layer,results in all_results.items()}
 
     diff_ogmr_less_ogonlybg = {k:results_og_mr[k] - results_og_onlybg[k] for k in chosen_layers}
     
@@ -128,6 +129,10 @@ def main(args, in9_types, model_name='', n_bootstraps=1000, chosen_layers=['conv
     Path(f'{save_path}/original_only_bg').mkdir(parents=True, exist_ok=True)
     with open(f'{save_path}/original_only_bg/{_modelp}_exemplar-bootstrap.pickle', 'wb') as f:
         pickle.dump(results_og_onlybg,f)
+    
+    Path(f'{save_path}/original_original').mkdir(parents=True, exist_ok=True)
+    with open(f'{save_path}/original_original/{_modelp}_exemplar-bootstrap.pickle', 'wb') as f:
+        pickle.dump(results_og_og,f)
     
     Path(f'{save_path}/og_mr_less_ogonlybg').mkdir(parents=True, exist_ok=True)
     with open(f'{save_path}/og_mr_less_ogonlybg/{_modelp}_exemplar-bootstrap.pickle', 'wb') as f:
@@ -156,9 +161,9 @@ if __name__ == '__main__':
 
     B = 1000
 
-    for model in os.listdir(args.model_path):
+    for model in os.listdir(args.model_path)[:4]:
         main(args, in9_types, model, B)
     
     # then do supervised
-    args.supervised=True
-    main(args, in9_types, model_name='supervised', n_bootstraps=B)
+    # args.supervised=True
+    # main(args, in9_types, model_name='supervised', n_bootstraps=B)
