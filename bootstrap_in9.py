@@ -46,13 +46,13 @@ def bootstrap(og_activations, mr_activations, onlybg_activations, og_rdm_dict_no
 
     return corr_coef_ogmr, corr_coef_ogonlybg, corr_coef_ogog
 
-def main(args, in9_types, model_name='', n_bootstraps=1000, chosen_layers=['conv5'], save_path='/data/movie-associations/bootstrapping', training='main'):
+def main(args, in9_types, model_name='', n_bootstraps=1000, single_layer='conv5', save_path='/data/movie-associations/bootstrapping', training='main'):
     
     _modelp = model_name.split('_')[0]
     print(f'MODEL: {_modelp}')
 
     acts = []
-    for in9_type in in9_types[:1]:
+    for in9_type in in9_types:
         type_act_path = os.path.join('/data/movie-associations/activations/bg_challenge',training,in9_type,'all',f'{_modelp}_activations.pickle')
         if os.path.exists(type_act_path):
             calc_acts=False
@@ -97,59 +97,34 @@ def main(args, in9_types, model_name='', n_bootstraps=1000, chosen_layers=['conv
 
             imageset = os.path.join(f'{args.image_path}',in9_type,'val')
 
-            acts.append(get_activations(imageset, model, args, mean=mean, std=std, calc_mean=False))
+            activations = get_activations(imageset, model, args, mean=mean, std=std, calc_mean=False)
+            acts.append({categ:{single_layer: layers[single_layer]} for categ, layers in activations.items()})
             
             torch.cuda.empty_cache()
-            
-            # Path(os.path.join(args.save_path,training,in9_type,'all')).mkdir(parents=True, exist_ok=True)
-            # with open(type_act_path,'wb') as f:
-            #     pickle.dump(activations,f)
-            
-            # del activations
+            del activations
+
         else:
-            acts.append(pd.read_pickle(os.path.join(args.save_path,training,in9_type,'all',f'{_modelp}_activations.pickle')))
+            activations = pd.read_pickle(os.path.join(args.save_path,training,in9_type,'all',f'{_modelp}_activations.pickle')) 
+            acts.append({categ:{single_layer:layers[single_layer]} for categ, layers in activations.items()})
+            del activations
     
 
     og_activations = acts[0]
     mr_activations = acts[1]
     onlybg_activations = acts[2]
+
+    all_results = {single_layer:[]}
     
+    # do actual og_activations without bootstrap to get comparator
+    og_rdm_dict_no_bootstrap = run_activation_bootstrap(og_activations, list(range(450)), [single_layer])
 
-    all_results = {k:[] for k in chosen_layers}
+    all_results[single_layer].extend(Parallel(n_jobs=4)(delayed(bootstrap)(og_activations,mr_activations,onlybg_activations,og_rdm_dict_no_bootstrap,single_layer) for B in range(n_bootstraps)))
     
-    for layer in chosen_layers:
-        # do actual og_activations without bootstrap to get comparator
-        og_rdm_dict_no_bootstrap = run_activation_bootstrap(og_activations, list(range(450)), [layer])
+    results_og_mr = {layer:np.array([bootstrap[0] for bootstrap in results]) for layer,results in all_results.items()}
+    results_og_onlybg = {layer:np.array([bootstrap[1] for bootstrap in results]) for layer,results in all_results.items()}
+    results_og_og = {layer:np.array([bootstrap[2] for bootstrap in results]) for layer,results in all_results.items()}
 
-        all_results[layer].extend(Parallel(n_jobs=4)(delayed(bootstrap)(og_activations,mr_activations,onlybg_activations,og_rdm_dict_no_bootstrap,layer) for B in range(n_bootstraps)))
-        
-        for B in range(n_bootstraps):
-            # boot_inds = np.random.randint(450, size=450)
-            
-            # rdm_dict_og=run_activation_bootstrap(og_activations, boot_inds, [layer])
-            # rdm_dict_mr=run_activation_bootstrap(mr_activations, boot_inds, [layer])
-            # rdm_dict_onlybg = run_activation_bootstrap(onlybg_activations, boot_inds, [layer])
-
-            # # r(original, mixed_rand)
-            # corr_coef_ogmr, p_val = pearsonr(squareform(rdm_dict_og[layer]), squareform(rdm_dict_mr[layer]))
-
-            # # # r(original, only_bg_t)
-            # corr_coef_ogonlybg, p_val = pearsonr(squareform(rdm_dict_og[layer]), squareform(rdm_dict_onlybg[layer]))
-
-            # # r(original,original) - baseline
-            # corr_coef_ogog, p_val = pearsonr(squareform(og_rdm_dict_no_bootstrap[layer]), squareform(rdm_dict_og[layer]))
-            
-            # all_results[layer][0].append(corr_coef_ogmr)
-            # all_results[layer][1].append(corr_coef_ogonlybg)
-            # all_results[layer][2].append(corr_coef_ogog)
-
-
-    
-    results_og_mr = {layer:np.array(results[0]) for layer,results in all_results.items()}
-    results_og_onlybg = {layer:np.array(results[1]) for layer,results in all_results.items()}
-    results_og_og = {layer:np.array(results[2]) for layer,results in all_results.items()}
-
-    diff_ogmr_less_ogonlybg = {k:results_og_mr[k] - results_og_onlybg[k] for k in chosen_layers}
+    diff_ogmr_less_ogonlybg = {k:results_og_mr[k] - results_og_onlybg[k] for k in [single_layer]}
     
     # Save the two correlations and the difference
     Path(f'{save_path}/original_mixed_rand').mkdir(parents=True, exist_ok=True)
@@ -184,16 +159,15 @@ if __name__ == '__main__':
 
     og = 'original'
     mr = 'mixed_rand'
-    ms = 'mixed_same'
     only_bg = 'only_bg_t'
 
     in9_types=[og,mr,only_bg]
 
-    B = 2
+    B = 1000
 
-    for model in os.listdir(args.model_path)[4:]:
+    for model in os.listdir(args.model_path)[:4]:
         main(args, in9_types, model, B)
     
     # then do supervised
-    args.supervised=True
-    main(args, in9_types, model_name='supervised', n_bootstraps=B)
+    # args.supervised=True
+    # main(args, in9_types, model_name='supervised', n_bootstraps=B)
