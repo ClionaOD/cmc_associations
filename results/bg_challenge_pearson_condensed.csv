@@ -1,0 +1,15 @@
+Pearson,IN-9 Type,Model,Sig
+-0.055730292,only background,CMC (ImageNet),0.866
+0.074334822,only background,CMC (movies),0.794
+0.080701877,only background,Supervised (ImageNet),0.734
+0.330167399,only background,Temporal 1 s (movies),0.106
+0.851231401,only background,Temporal 10 s (movies),0.001
+0.398924345,only background,Temporal 60 s (movies),0.03
+0.591178523,only background,Temporal 5 min (movies),0.006
+0.377287905,mixed rand,CMC (ImageNet),0.053
+0.132046813,mixed rand,CMC (movies),0.618
+0.906128577,mixed rand,Supervised (ImageNet),0.001
+0.191275214,mixed rand,Temporal 1 s (movies),0.482
+0.246804205,mixed rand,Temporal 10 s (movies),0.288
+0.111492564,mixed rand,Temporal 60 s (movies),0.591
+0.817406259,mixed rand,Temporal 5 min (movies),0.001
