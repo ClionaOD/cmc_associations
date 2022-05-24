@@ -71,3 +71,23 @@ bold_figs_obj-train/*
 
 # slurm scripts
 *.sh
+mantel_bootstrap_results/rdm-level_authorLab_original-vs-mixed_rand.pickle
+mantel_bootstrap_results/rdm-level_authorLab_original-vs-only_bg_t.pickle
+mantel_bootstrap_results/rdm-level_finetune1sec_original-vs-mixed_rand.pickle
+mantel_bootstrap_results/rdm-level_finetune1sec_original-vs-only_bg_t.pickle
+mantel_bootstrap_results/rdm-level_finetune5min_original-vs-mixed_rand.pickle
+mantel_bootstrap_results/rdm-level_finetune5min_original-vs-only_bg_t.pickle
+mantel_bootstrap_results/rdm-level_finetune10sec_original-vs-mixed_rand.pickle
+mantel_bootstrap_results/rdm-level_finetune10sec_original-vs-only_bg_t.pickle
+mantel_bootstrap_results/rdm-level_finetune60sec_original-vs-mixed_rand.pickle
+mantel_bootstrap_results/rdm-level_finetune60sec_original-vs-only_bg_t.pickle
+mantel_bootstrap_results/rdm-level_movieLab_original-vs-mixed_rand.pickle
+mantel_bootstrap_results/rdm-level_movieLab_original-vs-only_bg_t.pickle
+mantel_bootstrap_results/rdm-level_random-distort_original-vs-mixed_rand.pickle
+mantel_bootstrap_results/rdm-level_random-distort_original-vs-only_bg_t.pickle
+mantel_bootstrap_results/rdm-level_random-Lab_original-vs-mixed_rand.pickle
+mantel_bootstrap_results/rdm-level_random-Lab_original-vs-only_bg_t.pickle
+mantel_bootstrap_results/rdm-level_random-supervised_original-vs-mixed_rand.pickle
+mantel_bootstrap_results/rdm-level_random-supervised_original-vs-only_bg_t.pickle
+mantel_bootstrap_results/rdm-level_supervised_original-vs-mixed_rand.pickle
+mantel_bootstrap_results/rdm-level_supervised_original-vs-only_bg_t.pickle
