@@ -35,21 +35,31 @@ def parse_option():
     parser.add_argument('--save_path', type=str,help='path to save activations')
     parser.add_argument('--image_path', type=str, help='path to images for activation analysis')
    
-    parser.add_argument('--transform', type=str, default='distort', choices=['Lab','distort'], help='color transform to use')
+    parser.add_argument('--transform', type=str, default=None, choices=['Lab','distort'], help='color transform to use')
     parser.add_argument('--dataset', type=str, default='imagenet', choices=['imagenet','mscoco','bg_challenge'], help='what dataset using, important for mean/std of transform')
     
     parser.add_argument('--model', type=str, default='alexnet', choices=['alexnet',
                                                                          'resnet50'])
 
     parser.add_argument('--supervised', type=bool, default=False, help='whether to test against supervised AlexNet')
-   
-    parser.add_argument('--segment', type=str, default=None, choices=['rm_bg','rm_obj'], help='whether to segment the objects from bg and which to remove')
     
     parser.add_argument('--blur', type=bool, default=False, help='if not None, this will blur the image using a Gaussian kernel with sigma and kernel defined below')
     parser.add_argument('--sigma', type=float, default=10.0, help='sigma size for blurring if args.blur is not None')
     parser.add_argument('--kernel_size', type=int, default=15, help='paramater for setting the gaussian kernel size if this is preferred for blurring')
 
+    # normalize inputs?
+    parser.add_argument('--normalized', type=bool, default=True, help='normalize input according to mean and std')
+    parser.add_argument('--stattype', type=str, default=None, choices=['imagenet','mscoco','movset','lab'], help='flags which mean/std to use for input normalisation')
+    
     opt = parser.parse_args()
+
+    opt.transform='distort'
+    opt.stattype='lab'
+
+    if opt.transform is None:
+        raise ValueError('please select a value for the transform (Lab or distort)')
+    if opt.stattype is None:
+        raise ValueError('please select an input mean and std to which to normalize input data')
 
     return opt
 
@@ -92,7 +102,7 @@ class NoClassDataSet(data.Dataset):
         tensor_image = self.transform(image)
         return tensor_image, self.total_imgs[idx], img_loc
 
-def compute_features(dataloader, model, categories, layers, args, n_images, calc_mean=True):
+def compute_features(dataloader, model, categories, layers, args, calc_mean=True):
     print('Compute features')
     model.eval()
     
@@ -104,12 +114,9 @@ def compute_features(dataloader, model, categories, layers, args, n_images, calc
         if isinstance(m, nn.ReLU):
             m.register_forward_hook(_store_feats)
     
-    activations = {categ:{l:[] for l in layers} for categ in categories}
-    #categ is the n0XXX imagenet class - n_categs = 256 (len activations = 256)
-    #l is the layer ('conv1' etc.) - running avg of acts, sum with each then divide by n_images per class)
+    activations = {}
 
     print('... working on activations ...')
-    
     for i, input_tensor in enumerate(dataloader):  
         with torch.no_grad():
             
@@ -123,19 +130,28 @@ def compute_features(dataloader, model, categories, layers, args, n_images, calc
             _model_feats = []
             model(input_var)
             
-            if i == 0:
+            if not category in activations:
                 zero_arrs = [np.zeros(arr.shape) for arr in _model_feats]
-                activations = {categ:{l:zero_arrs[idx] for idx, l in enumerate(layers)} for categ in categories}
+                activations[category]={l:zero_arrs[idx] for idx, l in enumerate(layers)}
+                activations[category]['count'] = 0
 
             for idx, acts in enumerate(_model_feats): 
-                activations[category][layers[idx]] = np.vstack([activations[category][layers[idx]], acts])
+                # activations[category][layers[idx]] = np.vstack([activations[category][layers[idx]], acts])
+                activations[category][layers[idx]] += acts
+            activations[category]['count'] += 1
 
-    # first row is zero just for coding speed, get rid of
-    activations = {category:{layer:array[1:] for layer, array in layers.items()} for category,layers in activations.items()}    
+
+    # taking first index as just the batch size, which is 1
+    counts = {categ:layerdict['count'] for categ, layerdict in activations.items()}
+
+    for categ, layerdict in activations.items():
+        for layer,array in layerdict.items():
+            if not type(array)==int:
+                activations[categ][layer] = array[0] / counts[categ]
     
-    if calc_mean:
-        print('... getting mean ...')
-        activations = {category:{layer:np.mean(array,axis=0) for layer, array in layers.items()} for category,layers in activations.items()} 
+    # if calc_mean:
+    #     print('... getting mean ...')
+    #     activations = {category:{layer:np.mean(array,axis=0) for layer, array in layers.items()} for category,layers in activations.items()} 
 
     return activations
 
@@ -156,7 +172,7 @@ def imsave(inp, title=None):
     inp = np.clip(inp, 0, 1)
     plt.imsave(title, inp)
 
-def get_activations(imgPath, model, args, mean=[(0 + 100) / 2, (-86.183 + 98.233) / 2, (-107.857 + 94.478) / 2], std=[(100 - 0) / 2, (86.183 + 98.233) / 2, (107.857 + 94.478) / 2], calc_mean=True):
+def get_activations(imgPath, model, args, mean, std, calc_mean=True):
     
     #transform the input images
     #vals returned from get_mean_std.py
@@ -164,13 +180,8 @@ def get_activations(imgPath, model, args, mean=[(0 + 100) / 2, (-86.183 + 98.233
     #std = [0.3030, 0.3001, 0.3016]
 
     #original CMC mean/std for comparison
-    mean = mean
-    std = std
     normalize = transforms.Normalize(mean=mean, std=std)
     gauss = transforms.GaussianBlur(kernel_size=(args.kernel_size,args.kernel_size), sigma=(args.sigma,args.sigma))
-
-    # check how many images per category to average across
-    n_images = len(os.listdir(f'{imgPath}/{os.listdir(imgPath)[0]}'))
     
     if not args.supervised:   
         if args.transform == 'Lab':
@@ -178,39 +189,71 @@ def get_activations(imgPath, model, args, mean=[(0 + 100) / 2, (-86.183 + 98.233
         else:
             color_transfer = get_color_distortion()
 
-        train_transform = transforms.Compose([
-            transforms.Resize(224),
-            transforms.CenterCrop(224),
-            color_transfer,
-            transforms.ToTensor(),
-            normalize
-        ])
-        
-        if args.blur:
+        if args.normalized:
             train_transform = transforms.Compose([
                 transforms.Resize(224),
                 transforms.CenterCrop(224),
                 color_transfer,
                 transforms.ToTensor(),
-                gauss,
                 normalize
             ])
-    else:
-        train_transform = transforms.Compose([
-            transforms.Resize(224),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            normalize
-        ])
+        else:
+            train_transform = transforms.Compose([
+                transforms.Resize(224),
+                transforms.CenterCrop(224),
+                color_transfer,
+                transforms.ToTensor()
+            ])
         
         if args.blur:
+            if args.normalized:
+                train_transform = transforms.Compose([
+                    transforms.Resize(224),
+                    transforms.CenterCrop(224),
+                    color_transfer,
+                    transforms.ToTensor(),
+                    gauss,
+                    normalize
+                ])
+            else:
+                train_transform = transforms.Compose([
+                transforms.Resize(224),
+                transforms.CenterCrop(224),
+                color_transfer,
+                transforms.ToTensor(),
+                gauss
+            ])
+    else:
+        if args.normalized:
             train_transform = transforms.Compose([
                 transforms.Resize(224),
                 transforms.CenterCrop(224),
                 transforms.ToTensor(),
-                gauss,
                 normalize
             ])
+        else:
+            train_transform = transforms.Compose([
+            transforms.Resize(224),
+            transforms.CenterCrop(224),
+            transforms.ToTensor()
+        ])
+        
+        if args.blur:
+            if args.normalized:
+                train_transform = transforms.Compose([
+                    transforms.Resize(224),
+                    transforms.CenterCrop(224),
+                    transforms.ToTensor(),
+                    gauss,
+                    normalize
+                ])
+            else:
+                train_transform = transforms.Compose([
+                    transforms.Resize(224),
+                    transforms.CenterCrop(224),
+                    transforms.ToTensor(),
+                    gauss
+                ])
     
     #load the data
     if args.dataset == 'mscoco':
@@ -243,24 +286,38 @@ def get_activations(imgPath, model, args, mean=[(0 + 100) / 2, (-86.183 + 98.233
             layers = ['conv1','bn1','relu','maxpool','layer1','layer2','layer3','layer4']
 
         #compute the features
-        mean_activations = compute_features(dataloader, model, categories=categories, layers=layers, args=args, n_images=n_images, calc_mean=calc_mean)
+        mean_activations = compute_features(dataloader, model, categories=categories, layers=layers, args=args, calc_mean=calc_mean)
     
         return mean_activations
 
 def main(args, model_weights=''):
     modelpth = os.path.join(args.model_path, model_weights)
     print(f'MODEL: {model_weights}')
+
+    if args.stattype=='lab':
+        mean=[(0 + 100) / 2, (-86.183 + 98.233) / 2, (-107.857 + 94.478) / 2]
+        std=[(100 - 0) / 2, (86.183 + 98.233) / 2, (107.857 + 94.478) / 2]
+    elif args.stattype=='imagenet':
+        mean=[0.485,0.456,0.406]
+        std=[0.229,0.224,0.225]
+    elif args.stattype=='movset':
+        mean=[0.4493,0.4348,0.3970]
+        std=[0.3030, 0.3001, 0.3016]
+    elif args.stattype=='mscoco':
+        mean=[0.4240,0.4082,0.3853]
+        std=[0.2788, 0.2748, 0.2759]
+    else:
+        raise ValueError('please select a valid image type for input normalisation')
+
     
     if not args.supervised:
         print('not supervised')
         modelpth = os.path.join(args.model_path, model_weights)
-
-        if 'lab' in modelpth.lower():
-            args.transform = 'Lab'
         
-        if 'finetune' in modelpth or 'resnet' in modelpth:
+        if 'semanticCMC' in modelpth or 'resnet' in modelpth or 'finetune' in modelpth:
             checkpoint = torch.load(modelpth)['model']
         else:
+            # will do this for random
             checkpoint = torch.load(modelpth)
 
         if args.model == 'alexnet':
@@ -271,29 +328,28 @@ def main(args, model_weights=''):
         
         model.load_state_dict(checkpoint)
         model.cuda()
-
-        if args.dataset == 'mscoco':
-            activations = get_activations(args.image_path, model, args, mean=[0.4240,0.4082,0.3853], std=[0.2788, 0.2748, 0.2759])
-        else:
-            activations = get_activations(args.image_path, model, args, mean=[0.4493,0.4348,0.3970], std=[0.3030, 0.3001, 0.3016])
     else:
         print('supervised')
         model = alexnet(pretrained=True)
         model.cuda()
 
-        activations = get_activations(args.image_path, model, args)
+        
+    activations = get_activations(args.image_path, model, args, mean, std)
 
     print('done ... saving')
 
     if not args.supervised:
+        # should be the training type and timing
         _file = model_weights.split('_')[0]
+        _file = f'{_file}_{args.transform}_{args.stattype}-stats'
         _save = f'{args.save_path}/{_file}_activations.pickle'
         if args.blur:
             _save = f'{args.save_path}/{_file}_blur_sigma{args.sigma}_kernel{args.kernel_size}_activations.pickle'
     else:
-        _save = f'{args.save_path}/supervised_activations.pickle'
+        _file = f'supervised_{args.transform}_{args.stattype}-stats'
+        _save = f'{args.save_path}/{_file}_activations.pickle'
         if args.blur:
-            _save = f'{args.save_path}/supervised_blur_sigma{args.sigma}_kernel{args.kernel_size}_activations.pickle'
+            _save = f'{args.save_path}/{_file}_blur_sigma{args.sigma}_kernel{args.kernel_size}_activations.pickle'
     
     with open(_save, 'wb') as handle:
         pickle.dump(activations, handle)
@@ -302,19 +358,20 @@ if __name__ == '__main__':
     args = parse_option()
     print('args parsed')
 
-    # args.model_path = '/data/movie-associations/weights_for_eval/main_replic'
-    # args.image_path = '/data/movie-associations/bg_challenge/original/val'
-    # args.save_path = '/data/movie-associations/activations/bg_challenge/replic_training/original'
+    args.model_path = '/data/movie-associations/weights_for_eval/bigstats_replic'
+    args.image_path = '/data/movie-associations/test'
+    args.save_path = '/data/movie-associations/activations/main/bigstats_replic'
+
+    # args.normalized = True
 
     # args.model = 'alexnet'
 
     # args.dataset = 'bg_challenge'
 
-    # # args.supervised = True
-    # args.supervised = False
+    args.supervised = True
 
     if not args.supervised:
-        models = [m for m in os.listdir(args.model_path) if '.pth' in m and not 'random' in m]
+        models = [m for m in os.listdir(args.model_path) if '.pth' in m]
         for m in models:
             main(args,m)
     else:
