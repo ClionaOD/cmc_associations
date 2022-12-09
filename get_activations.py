@@ -53,13 +53,23 @@ def parse_option():
     
     opt = parser.parse_args()
 
-    opt.transform='distort'
+    opt.model_path = '/data/movie-associations/weights_for_eval/main_test'
+    opt.image_path = '/data/movie-associations/imagenet_cmc_256/to_test/'
+    opt.save_path = '/data/movie-associations/activations/main_test'
+
+    opt.transform = 'distort'
     opt.stattype='lab'
+    # opt.stattype='imagenet'
+
+    # opt.supervised=True
 
     if opt.transform is None:
         raise ValueError('please select a value for the transform (Lab or distort)')
     if opt.stattype is None:
         raise ValueError('please select an input mean and std to which to normalize input data')
+
+    if opt.supervised==True and not opt.stattype=='imagenet':
+        raise Warning('using a supervised model with incorrect input normalisation')
 
     return opt
 
@@ -126,7 +136,7 @@ def compute_features(dataloader, model, categories, layers, args, calc_mean=True
             else:
                 category = label.split('/')[-2]
             
-            input_var = input_var.float().cuda()
+            input_var = input_var.float().cuda() # different, wasn't on cuda in old
             _model_feats = []
             model(input_var)
             
@@ -137,9 +147,8 @@ def compute_features(dataloader, model, categories, layers, args, calc_mean=True
 
             for idx, acts in enumerate(_model_feats): 
                 # activations[category][layers[idx]] = np.vstack([activations[category][layers[idx]], acts])
-                activations[category][layers[idx]] += acts
+                activations[category][layers[idx]] = activations[category][layers[idx]] + acts # changed to match old script, used to be activations[category][layers[idx]] += acts but it didn't solve
             activations[category]['count'] += 1
-
 
     # taking first index as just the batch size, which is 1
     counts = {categ:layerdict['count'] for categ, layerdict in activations.items()}
@@ -334,7 +343,7 @@ def main(args, model_weights=''):
         model.cuda()
 
         
-    activations = get_activations(args.image_path, model, args, mean, std)
+    calc_activations = get_activations(args.image_path, model, args, mean, std)
 
     print('done ... saving')
 
@@ -352,15 +361,16 @@ def main(args, model_weights=''):
             _save = f'{args.save_path}/{_file}_blur_sigma{args.sigma}_kernel{args.kernel_size}_activations.pickle'
     
     with open(_save, 'wb') as handle:
-        pickle.dump(activations, handle)
+        pickle.dump(calc_activations, handle)
+    print(_save)
 
 if __name__ == '__main__':
     args = parse_option()
     print('args parsed')
 
-    args.model_path = '/data/movie-associations/weights_for_eval/bigstats_replic'
-    args.image_path = '/data/movie-associations/test'
-    args.save_path = '/data/movie-associations/activations/main/bigstats_replic'
+    # args.model_path = '/data/movie-associations/weights_for_eval/bigstats_replic'
+    # args.image_path = '/data/movie-associations/test'
+    # args.save_path = '/data/movie-associations/activations/main/bigstats_replic'
 
     # args.normalized = True
 
@@ -368,7 +378,7 @@ if __name__ == '__main__':
 
     # args.dataset = 'bg_challenge'
 
-    args.supervised = True
+    # args.supervised = True
 
     if not args.supervised:
         models = [m for m in os.listdir(args.model_path) if '.pth' in m]
