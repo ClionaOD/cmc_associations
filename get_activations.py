@@ -150,6 +150,7 @@ def compute_features(dataloader, model, categories, layers, args, calc_mean=True
                 activations[category][layers[idx]] = activations[category][layers[idx]] + acts # changed to match old script, used to be activations[category][layers[idx]] += acts but it didn't solve
             activations[category]['count'] += 1
 
+
     # taking first index as just the batch size, which is 1
     counts = {categ:layerdict['count'] for categ, layerdict in activations.items()}
 
