@@ -39,14 +39,19 @@ def parse_option():
 
     opt = parser.parse_args()
 
-    opt.model_path = '/data/movie-associations/weights_for_eval/bigstats_replic3'
-    opt.image_path = '/data/movie-associations/imagenet_cmc_256/to_test/'
-    opt.save_path = '/data/movie-associations/activations/main/bigstats_replic3'
-    opt.transform = 'distort'
-    opt.stattype = 'lab'
+    # opt.model_path = '/data/movie-associations/weights_for_eval/bigstats_replic3'
+    # opt.image_path = '/data/movie-associations/imagenet_cmc_256/to_test/'
+    # opt.save_path = '/data/movie-associations/activations/main/bigstats_replic3'
+    # opt.transform = 'distort'
+    # # opt.stattype = 'lab'
     # opt.supervised=True
     # opt.stattype='imagenet'
 
+    print(f"Model path : {opt.model_path}")
+    print(f"Image Path : {opt.image_path}")
+    print(f"Transform : {opt.transform}")
+    print(f"Norm stat type : {opt.stattype}")
+    print(f"Supervised model : {opt.supervised}")
 
     return opt
 
@@ -181,6 +186,7 @@ def get_activations(imgPath, model, args):
     
     normalize = transforms.Normalize(mean=mean, std=std)
 
+    ## TRANSFORM I USUALLY USE
     train_transform = transforms.Compose([
         transforms.Resize(224),
         transforms.CenterCrop(224),
@@ -210,6 +216,7 @@ def get_activations(imgPath, model, args):
     return mean_activations
 
 def main(args, model_weights=''):
+    print(f'MODEL: {model_weights}')
     if not args.supervised:
         print('not supervised')
         modelpth = os.path.join(args.model_path, model_weights)
@@ -246,6 +253,7 @@ def main(args, model_weights=''):
     
     with open(_save, 'wb') as handle:
         pickle.dump(activations, handle)
+    print(_save)
 
 if __name__ == '__main__':
     args = parse_option()
@@ -253,5 +261,5 @@ if __name__ == '__main__':
     if not args.supervised:
         for m in os.listdir(args.model_path):
             main(args,m)
-    else:
+    else:   
         main(args)
