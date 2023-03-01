@@ -39,13 +39,13 @@ def parse_option():
 
     opt = parser.parse_args()
 
-    # opt.model_path = '/data/movie-associations/weights_for_eval/bigstats_replic3'
-    # opt.image_path = '/data/movie-associations/imagenet_cmc_256/to_test/'
-    # opt.save_path = '/data/movie-associations/activations/main/bigstats_replic3'
+    # opt.model_path = '/data/movie-associations/weights_for_eval/bigstats_replic'
+    # opt.image_path = '/data/movie-associations/bg_challenge/original/val'
+    # opt.save_path = '/data/movie-associations/activations/bg_challenge/bigstats_replic'
     # opt.transform = 'distort'
-    # # opt.stattype = 'lab'
-    # opt.supervised=True
-    # opt.stattype='imagenet'
+    # opt.stattype = 'lab'
+    # # opt.supervised=True
+    # # opt.stattype='imagenet'
 
     print(f"Model path : {opt.model_path}")
     print(f"Image Path : {opt.image_path}")
@@ -104,11 +104,14 @@ def compute_features(dataloader, model, categories, layers):
     #l is the layer ('conv1' etc.) - running avg of acts, sum with each then divide by 150 (150 imgs per class)
 
     print('... working on activations ...')
+    category_counts = {}
     for i, input_tensor in enumerate(dataloader):  
         with torch.no_grad():
             input_var, label = input_tensor[0].cuda(),input_tensor[2][0]
             
             category = label.split('/')[-2]
+            if not category in category_counts.keys():
+                category_counts[category]=0
             
             if args.remove_bg:
                 # input_var = remove_background(input_var)
@@ -134,13 +137,13 @@ def compute_features(dataloader, model, categories, layers):
 
             for idx, acts in enumerate(_model_feats): 
                 activations[category][layers[idx]] = activations[category][layers[idx]] + acts
+            
+            category_counts[category] += 1
     
     print('... getting mean ...')
     for categ in categories:
         for layer in layers:
-            activations[categ][layer] = (activations[categ][layer] / 150)
-            #150 is because there are 256 * 150 images in the test set, need to make an argument
-            #remove first dimension for batch size
+            activations[categ][layer] = (activations[categ][layer] / category_counts[category])
 
     return activations
 
