@@ -36,16 +36,17 @@ def parse_option():
     parser.add_argument('--remove_bg', type=bool, default=False, help='if True, this will segment the image and set the background to white')
     parser.add_argument('--blur', type=float, default=None, help='if not None, this will blur the image using a Gaussian kernel with sigma defined.')
     parser.add_argument('--stattype', type=str, choices=['lab','imagenet','movset'], help='color transform to use')
+    parser.add_argument('--calc_mean', type=bool, default=True, help='mean across exemplars or not')
 
     opt = parser.parse_args()
 
-    opt.model_path = '/data/movie-associations/weights_for_eval/across_train_weights'
-    opt.image_path = '/data/movie-associations/bg_challenge/original/val'
-    opt.save_path = '/data/movie-associations/activations/bg_challenge/across_train_weights/original'
-    opt.transform = 'distort'
-    opt.stattype = 'lab'
-    # opt.supervised=True
-    # opt.stattype='imagenet'
+    # opt.model_path = '/data/movie-associations/weights_for_eval/across_train_weights'
+    # opt.image_path = '/data/movie-associations/bg_challenge/original/val'
+    # opt.save_path = '/data/movie-associations/activations/bg_challenge/across_train_weights/original'
+    # opt.transform = 'distort'
+    # opt.stattype = 'lab'
+    # # opt.supervised=True
+    # # opt.stattype='imagenet'
 
     print(f"Model path : {opt.model_path}")
     print(f"Image Path : {opt.image_path}")
@@ -87,7 +88,7 @@ class ImageFolderWithPaths(datasets.ImageFolder):
 #         img_is_tensor=True)
 #     return output
 
-def compute_features(dataloader, model, layers):
+def compute_features(dataloader, model, layers,calc_mean=True):
     print('Compute features')
     model.eval()
     
@@ -150,7 +151,8 @@ def compute_features(dataloader, model, layers):
         for layer,acts in layerdict.items():
             assert acts.shape[-1] == category_counts[category] 
     
-    activations = {categ: {layer: np.mean(acts,axis=-1) for layer,acts in layerdict.items()} for categ,layerdict in activations.items()}
+    if calc_mean:
+        activations = {categ: {layer: np.mean(acts,axis=-1) for layer,acts in layerdict.items()} for categ,layerdict in activations.items()}
 
     ## OLD
     # for categ in categories:
@@ -229,7 +231,7 @@ def get_activations(imgPath, model, args):
     
     #compute the features
     # mean_activations = compute_features(dataloader, model, categories=categories, layers=layers) ## OLD
-    mean_activations = compute_features(dataloader, model, layers=layers)
+    mean_activations = compute_features(dataloader, model, layers=layers, calc_mean=args.calc_mean)
     
     return mean_activations
 
@@ -261,14 +263,19 @@ def main(args, model_weights=''):
         _file = m.split('_')[0]
         _file = f'{_file}_{args.transform}_{args.stattype}-stats'
         _save = f'{args.save_path}/{_file}_activations.pickle'
+        ## TODO: make blur and no mean compatable 
         if args.blur is not None:
             _save = f'{args.save_path}/{_file}_blur_{args.blur}_activations.pickle'
+        if not args.calc_mean:
+            _save = f'{args.save_path}/{_file}_exemplar_activations.pickle'
     else:
         _file = f'supervised_{args.transform}_{args.stattype}-stats'
         _save = f'{args.save_path}/{_file}_activations.pickle'
         if args.blur is not None:
             _save = f'{args.save_path}/supervised_blur_{args.blur}_activations.pickle'
-    
+        if not args.calc_mean:
+            _save = f'{args.save_path}/supervised_exemplar_activations.pickle'
+
     with open(_save, 'wb') as handle:
         pickle.dump(activations, handle)
     print(_save)
