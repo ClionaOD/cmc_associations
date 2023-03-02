@@ -39,13 +39,13 @@ def parse_option():
 
     opt = parser.parse_args()
 
-    # opt.model_path = '/data/movie-associations/weights_for_eval/bigstats_replic'
-    # opt.image_path = '/data/movie-associations/bg_challenge/original/val'
-    # opt.save_path = '/data/movie-associations/activations/bg_challenge/bigstats_replic'
-    # opt.transform = 'distort'
-    # opt.stattype = 'lab'
-    # # opt.supervised=True
-    # # opt.stattype='imagenet'
+    opt.model_path = '/data/movie-associations/weights_for_eval/across_train_weights'
+    opt.image_path = '/data/movie-associations/bg_challenge/original/val'
+    opt.save_path = '/data/movie-associations/activations/bg_challenge/across_train_weights/original'
+    opt.transform = 'distort'
+    opt.stattype = 'lab'
+    # opt.supervised=True
+    # opt.stattype='imagenet'
 
     print(f"Model path : {opt.model_path}")
     print(f"Image Path : {opt.image_path}")
@@ -132,18 +132,23 @@ def compute_features(dataloader, model, categories, layers):
             model(input_var)
             
             if i == 0:
-                zero_arrs = [np.zeros(arr.shape) for arr in _model_feats]
-                activations = {categ:{l:zero_arrs[idx] for idx, l in enumerate(layers)} for categ in categories}
-
-            for idx, acts in enumerate(_model_feats): 
-                activations[category][layers[idx]] = activations[category][layers[idx]] + acts
+                for acts in _model_feats:
+                    activations = {categ: {l:acts for l in layers} for categ in categories}
+                
+                # zero_arrs = [np.zeros(arr.shape) for arr in _model_feats]
+                # activations = {categ:{l:zero_arrs[idx] for idx, l in enumerate(layers)} for categ in categories}
+            else:
+                for idx, acts in enumerate(_model_feats): 
+                    # activations[category][layers[idx]] = activations[category][layers[idx]] + acts
+                    activations[category][layers[idx]] = torch.dstack((activations[category][layers[idx]],acts))
             
             category_counts[category] += 1
     
     print('... getting mean ...')
     for categ in categories:
         for layer in layers:
-            activations[categ][layer] = (activations[categ][layer] / category_counts[category])
+            # activations[categ][layer] = (activations[categ][layer] / category_counts[category])
+            activations[categ][layer] = torch.mean(activations[categ][layer],axis=1)
 
     return activations
 
