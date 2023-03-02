@@ -87,7 +87,7 @@ class ImageFolderWithPaths(datasets.ImageFolder):
 #         img_is_tensor=True)
 #     return output
 
-def compute_features(dataloader, model, categories, layers):
+def compute_features(dataloader, model, layers):
     print('Compute features')
     model.eval()
     
@@ -99,7 +99,7 @@ def compute_features(dataloader, model, categories, layers):
         if isinstance(m, nn.ReLU):
             m.register_forward_hook(_store_feats)
     
-    activations = {categ:{l:[] for l in layers} for categ in categories}
+    activations = {}
     #categ is the n0XXX imagenet class - n_categs = 256 (len activations = 256)
     #l is the layer ('conv1' etc.) - running avg of acts, sum with each then divide by 150 (150 imgs per class)
 
@@ -131,24 +131,34 @@ def compute_features(dataloader, model, categories, layers):
             _model_feats = []
             model(input_var)
             
-            if i == 0:
-                for acts in _model_feats:
-                    activations = {categ: {l:acts for l in layers} for categ in categories}
+            if not category in activations.keys():
+                activations[category] = {layers[idx]:np.expand_dims(acts,-1) for idx,acts in enumerate(_model_feats)}
                 
+                ## OLD
                 # zero_arrs = [np.zeros(arr.shape) for arr in _model_feats]
                 # activations = {categ:{l:zero_arrs[idx] for idx, l in enumerate(layers)} for categ in categories}
             else:
                 for idx, acts in enumerate(_model_feats): 
+                    ## OLD
                     # activations[category][layers[idx]] = activations[category][layers[idx]] + acts
-                    activations[category][layers[idx]] = torch.dstack((activations[category][layers[idx]],acts))
+                    _allacts = activations[category][layers[idx]]
+                    ax = _allacts.ndim-1
+                    activations[category][layers[idx]] = np.concatenate((_allacts,np.expand_dims(acts,-1)),axis=ax)
             
             category_counts[category] += 1
     
+    for category,layerdict in activations.items():
+        for layer,acts in layerdict.items():
+            assert acts.shape[-1] == category_counts[category] 
+
     print('... getting mean ...')
-    for categ in categories:
-        for layer in layers:
-            # activations[categ][layer] = (activations[categ][layer] / category_counts[category])
-            activations[categ][layer] = torch.mean(activations[categ][layer],axis=1)
+    activations = {categ: {layer: np.mean(acts,axis=-1) for layer,acts in layerdict.items()} for categ,layerdict in activations.items()}
+    
+    ## OLD
+    # for categ in categories:
+    #     for layer in layers:
+    #         # activations[categ][layer] = (activations[categ][layer] / category_counts[category])
+    #         activations[categ][layer] = np.mean(activations[categ][layer],axis=1)
 
     return activations
 
@@ -211,15 +221,17 @@ def get_activations(imgPath, model, args):
                                             pin_memory=True,
                                             shuffle = False)
     
-    categories = []
-    for d in os.listdir(args.image_path):
-        if os.path.isdir(f'{args.image_path}/{d}'):
-            categories.append(d)
+    ## OLD
+    # categories = []
+    # for d in os.listdir(args.image_path):
+    #     if os.path.isdir(f'{args.image_path}/{d}'):
+    #         categories.append(d)
 
     layers = ['conv1', 'conv2', 'conv3', 'conv4', 'conv5', 'fc6', 'fc7']
     
     #compute the features
-    mean_activations = compute_features(dataloader, model, categories=categories, layers=layers)
+    # mean_activations = compute_features(dataloader, model, categories=categories, layers=layers) ## OLD
+    mean_activations = compute_features(dataloader, model, layers=layers)
     
     return mean_activations
 
