@@ -141,19 +141,17 @@ def compute_features(dataloader, model, layers):
                 for idx, acts in enumerate(_model_feats): 
                     ## OLD
                     # activations[category][layers[idx]] = activations[category][layers[idx]] + acts
-                    _allacts = activations[category][layers[idx]]
-                    ax = _allacts.ndim-1
-                    activations[category][layers[idx]] = np.concatenate((_allacts,np.expand_dims(acts,-1)),axis=ax)
+                    ax = activations[category][layers[idx]].ndim-1
+                    activations[category][layers[idx]] = np.concatenate((activations[category][layers[idx]],np.expand_dims(acts,-1)),axis=ax)
             
             category_counts[category] += 1
     
     for category,layerdict in activations.items():
         for layer,acts in layerdict.items():
             assert acts.shape[-1] == category_counts[category] 
-
-    print('... getting mean ...')
-    activations = {categ: {layer: np.mean(acts,axis=-1) for layer,acts in layerdict.items()} for categ,layerdict in activations.items()}
     
+    activations = {categ: {layer: np.mean(acts,axis=-1) for layer,acts in layerdict.items()} for categ,layerdict in activations.items()}
+
     ## OLD
     # for categ in categories:
     #     for layer in layers:
