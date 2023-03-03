@@ -274,9 +274,9 @@ def main(args, model_weights=''):
         _file = f'supervised_{args.transform}_{args.stattype}-stats'
         _save = f'{args.save_path}/{_file}_activations.pickle'
         if args.blur is not None:
-            _save = f'{args.save_path}/supervised_blur_{args.blur}_activations.pickle'
+            _save = f'{args.save_path}/){_file}_blur_{args.blur}_activations.pickle'
         if args.no_mean:
-            _save = f'{args.save_path}/supervised_exemplar_activations.pickle'
+            _save = f'{args.save_path}/{_file}_exemplar_activations.pickle'
 
     with open(_save, 'wb') as handle:
         pickle.dump(activations, handle)
